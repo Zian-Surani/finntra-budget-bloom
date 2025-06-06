@@ -38,13 +38,17 @@ const Landing = () => {
     }
   ];
 
+  const handleLogoClick = () => {
+    window.location.href = '/';
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       {/* Header */}
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-3 cursor-pointer" onClick={handleLogoClick}>
               <img 
                 src="/lovable-uploads/62637124-2993-4040-a176-d1e9ed77f87d.png" 
                 alt="FinnTra Logo" 
@@ -64,23 +68,25 @@ const Landing = () => {
         </div>
       </header>
 
-      {/* Hero Section */}
+      {/* Hero Section with Animation */}
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-5xl font-bold text-gray-900 mb-6">
-            Take Control of Your <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Finances</span>
-          </h2>
-          <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-            FinnTra is a modern, intelligent finance tracker that helps you manage your money, 
-            set budgets, track expenses, and achieve your financial goals with ease.
-          </p>
-          <div className="flex justify-center space-x-4">
-            <Button size="lg" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700" onClick={() => window.location.href = '/login'}>
-              Start Tracking Now
-            </Button>
-            <Button size="lg" variant="outline" onClick={() => window.location.href = '/dashboard'}>
-              View Demo
-            </Button>
+          <div className="animate-fade-in">
+            <h2 className="text-5xl font-bold text-gray-900 mb-6">
+              Take Control of Your <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Finances</span>
+            </h2>
+            <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+              FinnTra is a modern, intelligent finance tracker that helps you manage your money, 
+              set budgets, track expenses, and achieve your financial goals with ease.
+            </p>
+            <div className="flex justify-center space-x-4">
+              <Button size="lg" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 hover-scale" onClick={() => window.location.href = '/login'}>
+                Start Tracking Now
+              </Button>
+              <Button size="lg" variant="outline" className="hover-scale" onClick={() => window.location.href = '/dashboard'}>
+                View Demo
+              </Button>
+            </div>
           </div>
         </div>
       </section>
@@ -88,13 +94,13 @@ const Landing = () => {
       {/* Features Section */}
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
+          <div className="text-center mb-16 animate-fade-in">
             <h3 className="text-3xl font-bold text-gray-900 mb-4">Why Choose FinnTra?</h3>
             <p className="text-lg text-gray-600">Powerful features to help you master your finances</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((feature, index) => (
-              <Card key={index} className="shadow-lg border-0 hover:shadow-xl transition-shadow">
+              <Card key={index} className="shadow-lg border-0 hover:shadow-xl transition-shadow hover-scale">
                 <CardHeader>
                   <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-3 rounded-lg w-fit">
                     <feature.icon className="h-6 w-6 text-white" />
@@ -113,7 +119,7 @@ const Landing = () => {
       {/* Developer Section */}
       <section className="py-20 bg-gradient-to-r from-gray-50 to-blue-50">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
+          <div className="text-center mb-12 animate-fade-in">
             <h3 className="text-3xl font-bold text-gray-900 mb-4">Meet the Developer</h3>
             <p className="text-lg text-gray-600">Built with passion for financial empowerment</p>
           </div>
@@ -145,15 +151,15 @@ const Landing = () => {
               <div className="border-t pt-6 mt-6">
                 <h5 className="text-lg font-semibold text-gray-900 mb-4 text-center">Get in Touch</h5>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="flex items-center justify-center space-x-2 p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center justify-center space-x-2 p-3 bg-gray-50 rounded-lg hover-scale cursor-pointer">
                     <Mail className="h-5 w-5 text-blue-600" />
                     <span className="text-sm">dev@finntra.com</span>
                   </div>
-                  <div className="flex items-center justify-center space-x-2 p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center justify-center space-x-2 p-3 bg-gray-50 rounded-lg hover-scale cursor-pointer">
                     <Github className="h-5 w-5 text-blue-600" />
                     <span className="text-sm">github.com/finntra</span>
                   </div>
-                  <div className="flex items-center justify-center space-x-2 p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center justify-center space-x-2 p-3 bg-gray-50 rounded-lg hover-scale cursor-pointer">
                     <Linkedin className="h-5 w-5 text-blue-600" />
                     <span className="text-sm">linkedin.com/finntra</span>
                   </div>
@@ -167,7 +173,7 @@ const Landing = () => {
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="flex items-center justify-center space-x-3 mb-4">
+          <div className="flex items-center justify-center space-x-3 mb-4 cursor-pointer" onClick={handleLogoClick}>
             <img 
               src="/lovable-uploads/62637124-2993-4040-a176-d1e9ed77f87d.png" 
               alt="FinnTra Logo" 

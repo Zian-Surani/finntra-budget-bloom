@@ -5,11 +5,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { DollarSign, Mail, Lock, User, Github, Linkedin } from 'lucide-react';
+import { DollarSign, Mail, Lock, User } from 'lucide-react';
 
 const Login = () => {
   const [loginData, setLoginData] = useState({ email: '', password: '' });
   const [signupData, setSignupData] = useState({ name: '', email: '', password: '', confirmPassword: '' });
+
+  const handleLogoClick = () => {
+    window.location.href = '/';
+  };
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,7 +33,7 @@ const Login = () => {
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-3 cursor-pointer hover-scale" onClick={handleLogoClick}>
               <img 
                 src="/lovable-uploads/62637124-2993-4040-a176-d1e9ed77f87d.png" 
                 alt="FinnTra Logo" 
@@ -37,7 +41,7 @@ const Login = () => {
               />
               <h1 className="text-2xl font-bold text-gray-900">FinnTra</h1>
             </div>
-            <Button variant="outline" onClick={() => window.location.href = '/'}>
+            <Button variant="outline" onClick={handleLogoClick}>
               Back to Home
             </Button>
           </div>
@@ -45,7 +49,7 @@ const Login = () => {
       </header>
 
       <div className="flex items-center justify-center py-16">
-        <Card className="w-full max-w-md shadow-lg border-0">
+        <Card className="w-full max-w-md shadow-lg border-0 animate-scale-in">
           <CardHeader className="text-center">
             <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-3 rounded-lg w-fit mx-auto mb-4">
               <DollarSign className="h-8 w-8 text-white" />
