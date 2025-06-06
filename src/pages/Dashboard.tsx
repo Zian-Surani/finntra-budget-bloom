@@ -19,6 +19,7 @@ const Dashboard = () => {
   const { convertAmount, formatCurrency } = useCurrencyConverter();
   
   const [currency, setCurrency] = useState('USD');
+  
   const [transactions, setTransactions] = useState([
     { id: 1, type: 'expense', amount: 1250, category: 'Food', description: 'Grocery shopping', date: '2024-06-05' },
     { id: 2, type: 'income', amount: 5000, category: 'Salary', description: 'Monthly salary', date: '2024-06-01' },
@@ -101,7 +102,7 @@ const Dashboard = () => {
     
     toast({
       title: "Transaction added",
-      description: `${transaction.type === 'income' ? 'Income' : 'Expense'} of ${formatCurrency(transaction.amount, currency)} added successfully`,
+      description: `${transaction.type === 'income' ? 'Income' : 'Expense'} of ${formatCurrency(convertAmount(transaction.amount, 'USD', currency), currency)} added successfully`,
     });
   };
 
@@ -183,7 +184,7 @@ const Dashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{formatCurrency(netWorth, currency)}</div>
-              <p className="text-xs text-blue-100">+{formatCurrency(Math.floor(netWorth * 0.15))} this month</p>
+              <p className="text-xs text-blue-100">+{formatCurrency(Math.floor(netWorth * 0.15), currency)} this month</p>
             </CardContent>
           </Card>
 
@@ -337,7 +338,7 @@ const Dashboard = () => {
                         </div>
                       </div>
                       <span className={`font-semibold ${transaction.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
-                        {transaction.type === 'income' ? '+' : '-'}{formatCurrency(transaction.amount, currency)}
+                        {transaction.type === 'income' ? '+' : '-'}{formatCurrency(convertAmount(transaction.amount, 'USD', currency), currency)}
                       </span>
                     </div>
                   ))}
@@ -420,7 +421,7 @@ const Dashboard = () => {
                       </div>
                       <div className="text-right">
                         <span className={`font-semibold ${transaction.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
-                          {transaction.type === 'income' ? '+' : '-'}{formatCurrency(transaction.amount, currency)}
+                          {transaction.type === 'income' ? '+' : '-'}{formatCurrency(convertAmount(transaction.amount, 'USD', currency), currency)}
                         </span>
                         <Badge variant="outline" className="ml-2">
                           {transaction.category}
@@ -442,7 +443,9 @@ const Dashboard = () => {
               <CardContent>
                 <div className="space-y-6">
                   {budgets.map((budget) => {
-                    const percentage = (budget.spent / budget.allocated) * 100;
+                    const convertedAllocated = convertAmount(budget.allocated, 'USD', currency);
+                    const convertedSpent = convertAmount(budget.spent, 'USD', currency);
+                    const percentage = (convertedSpent / convertedAllocated) * 100;
                     const isOverBudget = percentage > 100;
                     
                     return (
@@ -450,7 +453,7 @@ const Dashboard = () => {
                         <div className="flex justify-between items-center">
                           <h3 className="font-medium">{budget.category}</h3>
                           <span className="text-sm text-gray-500">
-                            {formatCurrency(budget.spent)} / {formatCurrency(budget.allocated)}
+                            {formatCurrency(convertedSpent, currency)} / {formatCurrency(convertedAllocated, currency)}
                           </span>
                         </div>
                         <Progress 
@@ -462,7 +465,7 @@ const Dashboard = () => {
                             {percentage.toFixed(1)}% used
                           </span>
                           <span className="text-gray-500">
-                            {formatCurrency(budget.allocated - budget.spent)} remaining
+                            {formatCurrency(convertedAllocated - convertedSpent, currency)} remaining
                           </span>
                         </div>
                       </div>
@@ -484,7 +487,7 @@ const Dashboard = () => {
                   <BarChart data={monthlyData}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="month" />
-                    <YAxis tickFormatter={(value) => formatCurrency(value as number)}/>
+                    <YAxis tickFormatter={(value) => formatCurrency(value as number, currency)}/>
                     <Bar dataKey="income" fill="#10b981" />
                     <Bar dataKey="expenses" fill="#ef4444" />
                   </BarChart>
