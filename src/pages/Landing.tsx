@@ -84,17 +84,27 @@ const Landing = () => {
 
       {/* Hero section with carousel-synced stock image */}
       <section className="relative py-24 sm:py-32 flex flex-col items-center z-10 animate-fade-in">
-        <div className="max-w-5xl mx-auto px-4 flex flex-col items-center text-center gap-4">
-          {/* Logo centered above hero image and headline */}
+        <div className="max-w-5xl mx-auto px-4 flex flex-col items-center text-center gap-6">
+          {/* Large FinnTra branding above headline */}
+          <div className="flex items-center justify-center space-x-4 mb-4">
+            <img src={HERO_LOGO_SRC} alt="FinnTra Logo" className="h-20 w-20 drop-shadow-lg" />
+            <h1 className="text-7xl sm:text-8xl font-extrabold bg-gradient-to-r from-indigo-600 to-blue-500 bg-clip-text text-transparent tracking-tight">
+              FinnTra
+            </h1>
+          </div>
           
           <div className="relative flex items-center justify-center w-full">
             <HeroStockImage activeIndex={carouselIndex} />
           </div>
-          {/* Text that changes with the hero image */}
           
-          <h1 className="text-5xl sm:text-6xl font-extrabold text-gray-800 dark:text-white mb-3 leading-tight tracking-tight animate-fade-in">
+          {/* Dynamic text that changes with the hero image */}
+          <p className="text-2xl sm:text-3xl text-indigo-600 dark:text-indigo-400 font-semibold mb-2 animate-fade-in delay-100">
+            {HERO_IMAGES[carouselIndex % HERO_IMAGES.length].text}
+          </p>
+          
+          <h2 className="text-4xl sm:text-5xl font-extrabold text-gray-800 dark:text-white mb-3 leading-tight tracking-tight animate-fade-in">
             Your finances, <span className="bg-gradient-to-r from-indigo-600 to-blue-500 bg-clip-text text-transparent">happy</span> and under control
-          </h1>
+          </h2>
           <p className="text-xl sm:text-2xl text-gray-700 dark:text-gray-200 mb-4 max-w-2xl mx-auto animate-fade-in delay-100">
             FinnTra brings color and fun to your money management. See the big picture, get playful insights, save more painlessly.
           </p>
@@ -122,10 +132,56 @@ const Landing = () => {
             </Button>
           </div>
         </div>
-        {/* Playful circle illustration (removed by user request) */}
       </section>
-      {/* Professional auto-advance carousel with image sync */}
-      
+
+      {/* Mockup carousel similar to Toshl.com */}
+      <section className="py-16 bg-gradient-to-r from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h3 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">Three Ways to Track Your Money</h3>
+            <p className="text-xl text-gray-600 dark:text-gray-300">Choose the method that works best for you</p>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-8">
+            {/* Bank Connections */}
+            <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl p-8 text-center hover:scale-105 transition-transform">
+              <div className="mb-6">
+                <img src="/lovable-uploads/7df32f9b-320d-44c0-a6e4-bdb6b8871ffa.png" alt="Bank connections mockup" className="w-full h-48 object-cover rounded-lg shadow-lg" />
+              </div>
+              <h4 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">Bank connections</h4>
+              <p className="text-gray-600 dark:text-gray-300 mb-4">12379 bank & financial service connections worldwide</p>
+              <Button variant="outline" className="w-full">Learn more: Bank connections</Button>
+            </div>
+
+            {/* Add in the app */}
+            <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl p-8 text-center hover:scale-105 transition-transform">
+              <div className="mb-6 bg-gradient-to-br from-pink-400 to-red-500 rounded-lg p-6 flex items-center justify-center">
+                <Smartphone className="w-24 h-24 text-white" />
+              </div>
+              <h4 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">Add in the app</h4>
+              <p className="text-gray-600 dark:text-gray-300 mb-4">4 quick taps to add an expense or income</p>
+              <Button variant="outline" className="w-full">Learn more: Adding entries</Button>
+            </div>
+
+            {/* Import from file */}
+            <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl p-8 text-center hover:scale-105 transition-transform">
+              <div className="mb-6 bg-gradient-to-br from-green-400 to-blue-500 rounded-lg p-6 flex items-center justify-center">
+                <DollarSign className="w-24 h-24 text-white" />
+              </div>
+              <h4 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">Import from file</h4>
+              <p className="text-gray-600 dark:text-gray-300 mb-4">8 file import formats supported in the web app</p>
+              <Button variant="outline" className="w-full">Learn more: Importing</Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Auto-advance carousel */}
+      <section className="py-12 bg-white dark:bg-gray-950">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <LandingMockupCarousel onSlideChange={setCarouselIndex} />
+        </div>
+      </section>
 
       {/* Features Section */}
       <section className="py-20 bg-white">
@@ -195,7 +251,7 @@ const Landing = () => {
                   </a>
                   <a href="https://www.linkedin.com/in/zian-rajeshkumar-surani-125215195" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center space-x-2 p-3 bg-black rounded-lg hover:scale-105 cursor-pointer transition-transform">
                     <Linkedin className="h-5 w-5 text-white" />
-                    <span className="text-sm text-white">linkedin.com/in/zian-rajeshkumar-surani-125215195</span>
+                    <span className="text-sm text-white">Zian Surani</span>
                   </a>
                 </div>
               </div>
