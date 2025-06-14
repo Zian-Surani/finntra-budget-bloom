@@ -1,7 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { DollarSign, TrendingUp, PieChart, CreditCard, Shield, Smartphone, Github, Linkedin, Mail, Phone } from 'lucide-react';
+import { DollarSign, TrendingUp, PieChart, CreditCard, Shield, Smartphone, Github, Linkedin, Mail, Phone, Building2, Upload } from 'lucide-react';
 import { ThemeToggle } from "@/components/ThemeToggle";
 import LandingMockupCarousel from "@/components/LandingMockupCarousel";
 import HeroStockImage, { HERO_IMAGES, HERO_LOGO_SRC } from "@/components/HeroStockImage";
