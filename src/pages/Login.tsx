@@ -46,7 +46,7 @@ const Login = () => {
   };
 
   const handleLogin = () => {
-    console.log('Login attempt:', { email, password });
+    console.log('Login attempt:', { email: loginData.email, password: loginData.password });
     
     // Check if user has completed onboarding
     const onboardingComplete = localStorage.getItem('onboardingComplete');
@@ -70,8 +70,8 @@ const Login = () => {
       alert("Passwords do not match");
       return;
     }
-    // Redirect to dashboard after successful signup
-    window.location.href = "/dashboard";
+    // Redirect to onboarding for new users
+    window.location.href = "/onboarding";
   };
 
   return (
