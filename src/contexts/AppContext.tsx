@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './AuthContext';
@@ -81,11 +80,89 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   useEffect(() => {
     if (user && session) {
       loadUserData();
-      setupRealtimeSubscriptions();
     } else {
       setState(initialState);
     }
   }, [user, session]);
+
+  // Separate effect for realtime subscriptions to prevent multiple subscriptions
+  useEffect(() => {
+    let subscription: any = null;
+
+    if (user && session) {
+      // Setup realtime subscriptions
+      subscription = supabase
+        .channel(`user-data-changes-${user.id}`)
+        .on('postgres_changes', 
+          { 
+            event: '*', 
+            schema: 'public', 
+            table: 'profiles',
+            filter: `id=eq.${user.id}`
+          }, 
+          () => {
+            console.log('Profile change detected, reloading data');
+            loadUserData();
+          }
+        )
+        .on('postgres_changes', 
+          { 
+            event: '*', 
+            schema: 'public', 
+            table: 'banks',
+            filter: `user_id=eq.${user.id}`
+          }, 
+          () => {
+            console.log('Bank change detected, reloading data');
+            loadUserData();
+          }
+        )
+        .on('postgres_changes', 
+          { 
+            event: '*', 
+            schema: 'public', 
+            table: 'savings_goals',
+            filter: `user_id=eq.${user.id}`
+          }, 
+          () => {
+            console.log('Savings goal change detected, reloading data');
+            loadUserData();
+          }
+        )
+        .on('postgres_changes', 
+          { 
+            event: '*', 
+            schema: 'public', 
+            table: 'transactions',
+            filter: `user_id=eq.${user.id}`
+          }, 
+          () => {
+            console.log('Transaction change detected, reloading data');
+            loadUserData();
+          }
+        )
+        .on('postgres_changes', 
+          { 
+            event: '*', 
+            schema: 'public', 
+            table: 'user_settings',
+            filter: `user_id=eq.${user.id}`
+          }, 
+          () => {
+            console.log('User settings change detected, reloading data');
+            loadUserData();
+          }
+        )
+        .subscribe();
+    }
+
+    return () => {
+      if (subscription) {
+        console.log('Cleaning up realtime subscription');
+        supabase.removeChannel(subscription);
+      }
+    };
+  }, [user?.id, session]); // Only depend on user.id and session to prevent unnecessary re-subscriptions
 
   const loadUserData = async () => {
     if (!user) return;
@@ -149,64 +226,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       console.error('Error loading user data:', error);
       setState(prev => ({ ...prev, loading: false }));
     }
-  };
-
-  const setupRealtimeSubscriptions = () => {
-    if (!user) return;
-
-    // Subscribe to all table changes for the current user
-    const subscription = supabase
-      .channel('user-data-changes')
-      .on('postgres_changes', 
-        { 
-          event: '*', 
-          schema: 'public', 
-          table: 'profiles',
-          filter: `id=eq.${user.id}`
-        }, 
-        () => loadUserData()
-      )
-      .on('postgres_changes', 
-        { 
-          event: '*', 
-          schema: 'public', 
-          table: 'banks',
-          filter: `user_id=eq.${user.id}`
-        }, 
-        () => loadUserData()
-      )
-      .on('postgres_changes', 
-        { 
-          event: '*', 
-          schema: 'public', 
-          table: 'savings_goals',
-          filter: `user_id=eq.${user.id}`
-        }, 
-        () => loadUserData()
-      )
-      .on('postgres_changes', 
-        { 
-          event: '*', 
-          schema: 'public', 
-          table: 'transactions',
-          filter: `user_id=eq.${user.id}`
-        }, 
-        () => loadUserData()
-      )
-      .on('postgres_changes', 
-        { 
-          event: '*', 
-          schema: 'public', 
-          table: 'user_settings',
-          filter: `user_id=eq.${user.id}`
-        }, 
-        () => loadUserData()
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(subscription);
-    };
   };
 
   const updateUserData = async (data: Partial<UserData>) => {
