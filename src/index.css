@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -48,26 +47,26 @@
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
+    --background: 222.2 85% 6%;
     --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
+    --card: 225 25% 11%;
+    --card-foreground: 210 25% 92%;
+    --popover: 225 25% 14%;
+    --popover-foreground: 210 30% 94%;
+    --primary: 215 44% 62%;
+    --primary-foreground: 225 40% 11%;
+    --secondary: 224 17% 21%;
     --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
+    --muted: 217 15% 24%;
+    --muted-foreground: 210 16% 75%;
+    --accent: 223 23% 28%;
     --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
+    --destructive: 0 65% 44%;
     --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
+    --border: 220 6% 20%;
+    --input: 217 15% 24%;
+    --ring: 217 65% 60%;
+    --sidebar-background: 225 20% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
     --sidebar-primary-foreground: 0 0% 100%;
@@ -124,4 +123,39 @@
 
 .hover-scale:hover {
   transform: scale(1.05);
+}
+
+/* Improved card and table styling for dark mode */
+.card, .dark .card {
+  @apply shadow-lg !important;
+  background: hsl(var(--card));
+  color: hsl(var(--card-foreground));
+  border-radius: 1rem !important;
+  border: 1.5px solid hsl(var(--border));
+}
+/* Table improvements */
+.table-pro, .dark .table-pro {
+  @apply border border-border rounded-lg overflow-hidden shadow-lg;
+  background: hsl(var(--card));
+}
+
+/* Chart wrapper improvements */
+.chart-pro, .dark .chart-pro {
+  @apply rounded-xl shadow-lg border border-border bg-background p-3;
+  background: hsl(var(--popover));
+  border-color: hsl(var(--border));
+  transition: background 0.2s, border 0.2s;
+}
+
+/* Table head row background */
+thead, .dark thead {
+  background: hsl(var(--muted));
+  color: hsl(var(--muted-foreground));
+}
+
+/* Table hover effect */
+tr:hover, .dark tr:hover {
+  background: hsl(var(--accent)) !important;
+  cursor: pointer;
+  transition: background 0.2s;
 }
