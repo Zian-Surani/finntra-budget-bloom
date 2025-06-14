@@ -91,7 +91,7 @@ const Dashboard = () => {
   const quickActions = [
     { title: "Quick Expense Report", icon: FileText, action: () => window.location.href = '/expense-report' },
     { title: "View Summary", icon: BarChart3, action: () => window.location.href = '/user-summary' },
-    { title: "Check Balances", icon: Building2, action: () => window.location.href = '/bank-connections' },
+    { title: "Check Balances", icon: Building2, action: () => window.location.href = '/balance' },
     { title: "Taxes", icon: Calculator, action: () => window.location.href = '/tax-calculator' },
     { title: "Record Income", icon: TrendingUp, action: () => window.location.href = '/add-entries' }
   ];
@@ -199,7 +199,7 @@ const Dashboard = () => {
                 const IconComponent = stat.icon;
                 const displayValue = stat.isPercentage 
                   ? `${stat.value}%` 
-                  : stat.isNumeric 
+                  : stat.isNumeric && typeof stat.value === 'number'
                     ? formatCurrency(convertAmount(stat.value, 'USD', selectedCurrency), selectedCurrency)
                     : stat.value;
                 

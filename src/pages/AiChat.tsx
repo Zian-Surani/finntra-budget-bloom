@@ -1,51 +1,58 @@
 
-import React, { useState, useRef, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { toast } from "@/components/ui/sonner";
-import { ThemeToggle } from "@/components/ThemeToggle";
+import React, { useState, useRef, useEffect } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { 
+  MessageCircle, 
   Send, 
-  Trash2, 
-  Copy, 
-  Download, 
-  Settings, 
-  Sparkles,
-  Bot,
-  User,
+  Bot, 
+  User, 
+  Sparkles, 
   Home,
-  MessageSquare,
-  Lightbulb
-} from "lucide-react";
+  RotateCcw,
+  Copy,
+  ThumbsUp,
+  ThumbsDown,
+  Loader2
+} from 'lucide-react';
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from '@/components/ui/sonner';
 
-type ChatMessage = { 
-  role: "user" | "assistant"; 
-  content: string; 
-  timestamp: Date;
+interface Message {
   id: string;
-};
-
-const AI_FUNCTION_URL = "https://erwelgqvilhgtqorxwnf.functions.supabase.co/ai-assistant";
-
-const suggestions = [
-  "How can I save more money this month?",
-  "What's my spending pattern analysis?",
-  "Create a budget plan for me",
-  "Tips for investment planning",
-  "How to reduce monthly expenses?",
-  "Show me my expense categories"
-];
+  text: string;
+  sender: 'user' | 'assistant';
+  timestamp: Date;
+  isTyping?: boolean;
+}
 
 const AiChat = () => {
-  const [value, setValue] = useState("");
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: '1',
+      text: "Hello! I'm FinnTra, your AI financial assistant. I can help you with budgeting, expense tracking, financial planning, and answer any questions about managing your money. How can I assist you today?",
+      sender: 'assistant',
+      timestamp: new Date()
+    }
+  ]);
+  const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const suggestedQuestions = [
+    "How can I create a monthly budget?",
+    "What's the best way to track expenses?",
+    "How much should I save each month?",
+    "Tips for reducing monthly expenses",
+    "How to set financial goals?",
+    "Investment basics for beginners"
+  ];
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -55,255 +62,284 @@ const AiChat = () => {
     scrollToBottom();
   }, [messages]);
 
-  const generateId = () => Math.random().toString(36).substring(2) + Date.now().toString(36);
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
 
-  const sendMessage = async (text?: string) => {
-    const messageText = text || value.trim();
-    if (!messageText) return;
+  const handleSendMessage = async (messageText?: string) => {
+    const text = messageText || inputValue.trim();
+    if (!text || isLoading) return;
 
-    const userMessage: ChatMessage = {
-      role: "user",
-      content: messageText,
-      timestamp: new Date(),
-      id: generateId()
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      text,
+      sender: 'user',
+      timestamp: new Date()
     };
 
-    setMessages((msgs) => [...msgs, userMessage]);
+    setMessages(prev => [...prev, userMessage]);
+    setInputValue('');
     setIsLoading(true);
-    setValue("");
+
+    // Add typing indicator
+    const typingMessage: Message = {
+      id: 'typing',
+      text: '',
+      sender: 'assistant',
+      timestamp: new Date(),
+      isTyping: true
+    };
+    setMessages(prev => [...prev, typingMessage]);
 
     try {
-      const history = messages.map((msg) => ({
-        role: msg.role,
-        content: msg.content,
-      }));
-
-      const res = await fetch(AI_FUNCTION_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ prompt: messageText, history }),
+      const { data, error } = await supabase.functions.invoke('ai-assistant', {
+        body: { 
+          prompt: text,
+          history: messages.slice(-10).map(m => ({
+            role: m.sender === 'user' ? 'user' : 'assistant',
+            content: m.text
+          }))
+        }
       });
 
-      if (!res.ok) throw new Error("Error connecting to assistant.");
+      if (error) throw error;
 
-      const data = await res.json();
-      const assistantMessage: ChatMessage = {
-        role: "assistant",
-        content: data.generatedText || "Sorry, I couldn't process that request.",
-        timestamp: new Date(),
-        id: generateId()
+      const assistantMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        text: data.generatedText || "I apologize, but I'm having trouble responding right now. Please try again.",
+        sender: 'assistant',
+        timestamp: new Date()
       };
 
-      setMessages((msgs) => [...msgs, assistantMessage]);
-    } catch (error: any) {
-      console.error(error);
-      toast.error("The AI service is currently unavailable.");
-      const errorMessage: ChatMessage = {
-        role: "assistant",
-        content: "Sorry, I'm unavailable right now. Please try again later.",
-        timestamp: new Date(),
-        id: generateId()
+      setMessages(prev => prev.filter(m => m.id !== 'typing').concat(assistantMessage));
+    } catch (error) {
+      console.error('Error calling AI assistant:', error);
+      
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        text: "I'm sorry, I'm having trouble connecting right now. Please check your internet connection and try again. In the meantime, I can help you with general financial advice!",
+        sender: 'assistant',
+        timestamp: new Date()
       };
-      setMessages((msgs) => [...msgs, errorMessage]);
+
+      setMessages(prev => prev.filter(m => m.id !== 'typing').concat(errorMessage));
+      toast.error('Failed to get AI response. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
+
+  const copyMessage = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast.success('Message copied to clipboard');
+  };
+
   const clearChat = () => {
-    setMessages([]);
-  };
-
-  const copyMessage = (content: string) => {
-    navigator.clipboard.writeText(content);
-    toast.success("Message copied to clipboard");
-  };
-
-  const exportChat = () => {
-    const chatContent = messages.map(msg => 
-      `${msg.role === 'user' ? 'You' : 'FinnTra AI'}: ${msg.content}`
-    ).join('\n\n');
-    
-    const blob = new Blob([chatContent], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'finntra-chat-export.txt';
-    a.click();
-    URL.revokeObjectURL(url);
+    setMessages([
+      {
+        id: '1',
+        text: "Hello! I'm FinnTra, your AI financial assistant. I can help you with budgeting, expense tracking, financial planning, and answer any questions about managing your money. How can I assist you today?",
+        sender: 'assistant',
+        timestamp: new Date()
+      }
+    ]);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-gray-950 dark:to-slate-900 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-blue-100 to-white dark:from-gray-950 dark:via-gray-900 dark:to-slate-950">
       {/* Header */}
-      <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-4 py-3">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
+      <header className="bg-white shadow-sm border-b dark:bg-gray-900 dark:border-gray-800 sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <Button variant="ghost" size="sm" onClick={() => window.location.href = '/'}>
-              <Home className="h-4 w-4 mr-2" />
-              Home
-            </Button>
-            <Separator orientation="vertical" className="h-6" />
-            <div className="flex items-center space-x-2">
-              <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-2 rounded-lg">
-                <Sparkles className="h-5 w-5 text-white" />
-              </div>
-              <h1 className="text-xl font-bold text-gray-900 dark:text-white">FinnTra AI Assistant</h1>
-              <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                Online
-              </Badge>
+            <div className="relative">
+              <Bot className="h-8 w-8 text-indigo-600" />
+              <Sparkles className="h-4 w-4 text-yellow-500 absolute -top-1 -right-1" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">FinnTra AI Assistant</h1>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Your personal financial advisor</p>
             </div>
           </div>
-          <div className="flex items-center space-x-2">
-            <Button variant="ghost" size="sm" onClick={exportChat} disabled={messages.length === 0}>
-              <Download className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="sm" onClick={clearChat} disabled={messages.length === 0}>
-              <Trash2 className="h-4 w-4" />
+          <div className="flex items-center space-x-4">
+            <Button variant="outline" size="sm" onClick={clearChat}>
+              <RotateCcw className="h-4 w-4 mr-2" />
+              Clear Chat
             </Button>
             <ThemeToggle />
+            <Button onClick={() => window.location.href = '/dashboard'} variant="outline">
+              <Home className="h-4 w-4 mr-2" />
+              Dashboard
+            </Button>
           </div>
         </div>
       </header>
 
-      {/* Main Content */}
-      <div className="flex-1 flex max-w-4xl mx-auto w-full">
-        {/* Chat Area */}
-        <div className="flex-1 flex flex-col">
-          <ScrollArea className="flex-1 p-4">
-            {messages.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full text-center py-12">
-                <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-6 rounded-full mb-6">
-                  <MessageSquare className="h-12 w-12 text-white" />
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-[calc(100vh-120px)]">
+          {/* Sidebar */}
+          <div className="lg:col-span-1 space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Quick Questions</CardTitle>
+                <CardDescription>Get started with these common topics</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {suggestedQuestions.map((question, index) => (
+                  <Button
+                    key={index}
+                    variant="ghost"
+                    className="w-full text-left justify-start text-sm h-auto p-3 whitespace-normal"
+                    onClick={() => handleSendMessage(question)}
+                    disabled={isLoading}
+                  >
+                    {question}
+                  </Button>
+                ))}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">AI Capabilities</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary">💰</Badge>
+                  <span className="text-sm">Budget Planning</span>
                 </div>
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                  Welcome to FinnTra AI
-                </h2>
-                <p className="text-gray-600 dark:text-gray-400 mb-8 max-w-md">
-                  I'm your personal financial assistant. Ask me anything about budgeting, expenses, investments, or financial planning.
-                </p>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full max-w-2xl">
-                  {suggestions.map((suggestion, index) => (
-                    <Card 
-                      key={index}
-                      className="p-4 cursor-pointer hover:scale-105 transition-all bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600"
-                      onClick={() => sendMessage(suggestion)}
-                    >
-                      <div className="flex items-center space-x-3">
-                        <Lightbulb className="h-4 w-4 text-blue-600" />
-                        <span className="text-sm text-gray-700 dark:text-gray-300">{suggestion}</span>
-                      </div>
-                    </Card>
-                  ))}
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary">📊</Badge>
+                  <span className="text-sm">Expense Analysis</span>
                 </div>
-              </div>
-            ) : (
-              <div className="space-y-6">
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary">🎯</Badge>
+                  <span className="text-sm">Goal Setting</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary">💡</Badge>
+                  <span className="text-sm">Financial Tips</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary">📈</Badge>
+                  <span className="text-sm">Investment Advice</span>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Chat Area */}
+          <div className="lg:col-span-3 flex flex-col">
+            <Card className="flex-1 flex flex-col">
+              {/* Messages */}
+              <CardContent className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
                 {messages.map((message) => (
                   <div
                     key={message.id}
-                    className={`flex items-start space-x-3 ${
-                      message.role === "user" ? "flex-row-reverse space-x-reverse" : ""
-                    }`}
+                    className={`flex gap-3 ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
-                    <div className={`p-2 rounded-full ${
-                      message.role === "user" 
-                        ? "bg-blue-600" 
-                        : "bg-gradient-to-r from-purple-600 to-blue-600"
-                    }`}>
-                      {message.role === "user" ? (
-                        <User className="h-4 w-4 text-white" />
-                      ) : (
-                        <Bot className="h-4 w-4 text-white" />
-                      )}
-                    </div>
+                    {message.sender === 'assistant' && (
+                      <Avatar className="h-8 w-8 mt-1">
+                        <AvatarFallback className="bg-indigo-100 dark:bg-indigo-900">
+                          <Bot className="h-4 w-4 text-indigo-600" />
+                        </AvatarFallback>
+                      </Avatar>
+                    )}
                     
-                    <div className={`flex-1 max-w-[80%] ${
-                      message.role === "user" ? "text-right" : ""
-                    }`}>
-                      <div className={`p-4 rounded-2xl shadow-sm ${
-                        message.role === "user"
-                          ? "bg-blue-600 text-white ml-auto"
-                          : "bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700"
-                      }`}>
-                        <p className="whitespace-pre-wrap leading-relaxed">{message.content}</p>
+                    <div className={`max-w-[80%] ${message.sender === 'user' ? 'order-first' : ''}`}>
+                      <div
+                        className={`rounded-lg p-4 ${
+                          message.sender === 'user'
+                            ? 'bg-indigo-600 text-white ml-auto'
+                            : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100'
+                        }`}
+                      >
+                        {message.isTyping ? (
+                          <div className="flex items-center gap-2">
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            <span className="text-sm">FinnTra is thinking...</span>
+                          </div>
+                        ) : (
+                          <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.text}</p>
+                        )}
                       </div>
                       
-                      <div className={`flex items-center space-x-2 mt-2 text-xs text-gray-500 dark:text-gray-400 ${
-                        message.role === "user" ? "justify-end" : ""
-                      }`}>
-                        <span>{message.timestamp.toLocaleTimeString()}</span>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-6 w-6 p-0"
-                          onClick={() => copyMessage(message.content)}
-                        >
-                          <Copy className="h-3 w-3" />
-                        </Button>
-                      </div>
+                      {!message.isTyping && (
+                        <div className="flex items-center gap-2 mt-2">
+                          <span className="text-xs text-gray-500">
+                            {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                          {message.sender === 'assistant' && (
+                            <div className="flex gap-1">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-6 w-6 p-0"
+                                onClick={() => copyMessage(message.text)}
+                              >
+                                <Copy className="h-3 w-3" />
+                              </Button>
+                              <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                                <ThumbsUp className="h-3 w-3" />
+                              </Button>
+                              <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                                <ThumbsDown className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
+
+                    {message.sender === 'user' && (
+                      <Avatar className="h-8 w-8 mt-1">
+                        <AvatarFallback className="bg-gray-100 dark:bg-gray-800">
+                          <User className="h-4 w-4" />
+                        </AvatarFallback>
+                      </Avatar>
+                    )}
                   </div>
                 ))}
-                
-                {isLoading && (
-                  <div className="flex items-start space-x-3">
-                    <div className="p-2 rounded-full bg-gradient-to-r from-purple-600 to-blue-600">
-                      <Bot className="h-4 w-4 text-white" />
-                    </div>
-                    <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-200 dark:border-gray-700">
-                      <div className="flex space-x-1">
-                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-100"></div>
-                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-200"></div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-            <div ref={messagesEndRef} />
-          </ScrollArea>
+                <div ref={messagesEndRef} />
+              </CardContent>
 
-          {/* Input Area */}
-          <div className="p-4 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800">
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                if (!isLoading) sendMessage();
-              }}
-              className="flex space-x-3"
-            >
-              <Input
-                ref={inputRef}
-                type="text"
-                value={value}
-                onChange={(e) => setValue(e.target.value)}
-                placeholder="Ask me anything about your finances..."
-                disabled={isLoading}
-                className="flex-1 h-12 text-base bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400"
-                autoFocus
-              />
-              <Button 
-                type="submit" 
-                disabled={isLoading || !value.trim()}
-                size="lg"
-                className="h-12 px-6 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-              >
-                {isLoading ? (
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                ) : (
-                  <Send className="h-4 w-4" />
-                )}
-              </Button>
-            </form>
-            
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">
-              AI responses may contain errors. Always verify important financial advice.
-            </p>
+              <Separator />
+
+              {/* Input Area */}
+              <CardContent className="p-4">
+                <div className="flex gap-2">
+                  <Input
+                    ref={inputRef}
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    placeholder="Ask me anything about personal finance..."
+                    disabled={isLoading}
+                    className="flex-1"
+                  />
+                  <Button 
+                    onClick={() => handleSendMessage()} 
+                    disabled={!inputValue.trim() || isLoading}
+                    size="icon"
+                  >
+                    {isLoading ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Send className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+                <p className="text-xs text-gray-500 mt-2">
+                  Press Enter to send, Shift+Enter for new line
+                </p>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>

@@ -8,18 +8,20 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { Plus, TrendingUp, TrendingDown, Home, LogIn } from 'lucide-react';
+import { Plus, TrendingUp, TrendingDown, Home, LogIn, Check } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
 
 const AddEntries = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     type: 'expense' as 'income' | 'expense',
     amount: '',
     description: '',
     category: '',
     date: new Date().toISOString().split('T')[0],
-    account: 'checking'
+    account: 'checking',
+    notes: ''
   });
 
   const expenseCategories = [
@@ -30,7 +32,15 @@ const AddEntries = () => {
 
   const incomeCategories = [
     'Salary', 'Freelance', 'Business', 'Investments', 'Rental',
-    'Pension', 'Benefits', 'Gifts', 'Refunds', 'Other'
+    'Pension', 'Benefits', 'Gifts', 'Refunds', 'Bonus', 'Commission', 'Other'
+  ];
+
+  const accounts = [
+    { value: 'checking', label: 'Checking Account' },
+    { value: 'savings', label: 'Savings Account' },
+    { value: 'credit', label: 'Credit Card' },
+    { value: 'cash', label: 'Cash' },
+    { value: 'investment', label: 'Investment Account' }
   ];
 
   useEffect(() => {
@@ -39,7 +49,23 @@ const AddEntries = () => {
     setIsAuthenticated(!!user);
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const validateForm = () => {
+    if (!formData.amount || parseFloat(formData.amount) <= 0) {
+      toast.error('Please enter a valid amount');
+      return false;
+    }
+    if (!formData.description.trim()) {
+      toast.error('Please enter a description');
+      return false;
+    }
+    if (!formData.category) {
+      toast.error('Please select a category');
+      return false;
+    }
+    return true;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!isAuthenticated) {
@@ -48,41 +74,63 @@ const AddEntries = () => {
       return;
     }
 
-    if (!formData.amount || !formData.description || !formData.category) {
-      toast.error('Please fill in all required fields');
+    if (!validateForm()) {
       return;
     }
 
-    // Save to localStorage
-    const newTransaction = {
-      id: Date.now(),
-      type: formData.type,
-      amount: formData.type === 'expense' ? -Math.abs(parseFloat(formData.amount)) : Math.abs(parseFloat(formData.amount)),
-      description: formData.description,
-      category: formData.category,
-      date: formData.date,
-      account: formData.account
-    };
+    setIsSubmitting(true);
 
-    const existingTransactions = JSON.parse(localStorage.getItem('transactions') || '[]');
-    localStorage.setItem('transactions', JSON.stringify([newTransaction, ...existingTransactions]));
+    try {
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
-    toast.success(`${formData.type === 'income' ? 'Income' : 'Expense'} added successfully!`);
-    
-    // Reset form
-    setFormData({
-      type: 'expense',
-      amount: '',
-      description: '',
-      category: '',
-      date: new Date().toISOString().split('T')[0],
-      account: 'checking'
-    });
+      // Save to localStorage
+      const newTransaction = {
+        id: Date.now(),
+        type: formData.type,
+        amount: formData.type === 'expense' ? -Math.abs(parseFloat(formData.amount)) : Math.abs(parseFloat(formData.amount)),
+        description: formData.description.trim(),
+        category: formData.category,
+        date: formData.date,
+        account: formData.account,
+        notes: formData.notes.trim(),
+        createdAt: new Date().toISOString()
+      };
 
-    // Redirect to dashboard
-    setTimeout(() => {
-      window.location.href = '/dashboard';
-    }, 1000);
+      const existingTransactions = JSON.parse(localStorage.getItem('transactions') || '[]');
+      localStorage.setItem('transactions', JSON.stringify([newTransaction, ...existingTransactions]));
+
+      toast.success(`${formData.type === 'income' ? 'Income' : 'Expense'} added successfully!`);
+      
+      // Reset form
+      setFormData({
+        type: 'expense',
+        amount: '',
+        description: '',
+        category: '',
+        date: new Date().toISOString().split('T')[0],
+        account: 'checking',
+        notes: ''
+      });
+
+      // Redirect to dashboard after success
+      setTimeout(() => {
+        window.location.href = '/dashboard';
+      }, 1500);
+
+    } catch (error) {
+      toast.error('Failed to add transaction. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleTypeChange = (type: 'income' | 'expense') => {
+    setFormData(prev => ({
+      ...prev,
+      type,
+      category: '' // Reset category when type changes
+    }));
   };
 
   if (!isAuthenticated) {
@@ -142,7 +190,7 @@ const AddEntries = () => {
             Track Your Money
           </h2>
           <p className="text-xl text-gray-600 dark:text-gray-400">
-            Add income or expenses in just 4 quick taps
+            Add income or expenses quickly and accurately
           </p>
         </div>
 
@@ -164,7 +212,8 @@ const AddEntries = () => {
                   type="button"
                   variant={formData.type === 'expense' ? 'default' : 'outline'}
                   className="flex-1"
-                  onClick={() => setFormData({ ...formData, type: 'expense' })}
+                  onClick={() => handleTypeChange('expense')}
+                  disabled={isSubmitting}
                 >
                   <TrendingDown className="h-4 w-4 mr-2" />
                   Expense
@@ -173,7 +222,8 @@ const AddEntries = () => {
                   type="button"
                   variant={formData.type === 'income' ? 'default' : 'outline'}
                   className="flex-1"
-                  onClick={() => setFormData({ ...formData, type: 'income' })}
+                  onClick={() => handleTypeChange('income')}
+                  disabled={isSubmitting}
                 >
                   <TrendingUp className="h-4 w-4 mr-2" />
                   Income
@@ -187,10 +237,12 @@ const AddEntries = () => {
                   id="amount"
                   type="number"
                   step="0.01"
+                  min="0.01"
                   placeholder="0.00"
                   value={formData.amount}
                   onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
                   className="text-2xl font-bold"
+                  disabled={isSubmitting}
                   required
                 />
               </div>
@@ -200,9 +252,10 @@ const AddEntries = () => {
                 <Label htmlFor="description">Description *</Label>
                 <Input
                   id="description"
-                  placeholder="What was this for?"
+                  placeholder={formData.type === 'income' ? 'e.g., Salary payment, Freelance work' : 'e.g., Grocery shopping, Gas bill'}
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  disabled={isSubmitting}
                   required
                 />
               </div>
@@ -213,6 +266,7 @@ const AddEntries = () => {
                 <Select
                   value={formData.category}
                   onValueChange={(value) => setFormData({ ...formData, category: value })}
+                  disabled={isSubmitting}
                   required
                 >
                   <SelectTrigger>
@@ -236,6 +290,8 @@ const AddEntries = () => {
                   type="date"
                   value={formData.date}
                   onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                  disabled={isSubmitting}
+                  max={new Date().toISOString().split('T')[0]}
                 />
               </div>
 
@@ -245,22 +301,51 @@ const AddEntries = () => {
                 <Select
                   value={formData.account}
                   onValueChange={(value) => setFormData({ ...formData, account: value })}
+                  disabled={isSubmitting}
                 >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="checking">Checking Account</SelectItem>
-                    <SelectItem value="savings">Savings Account</SelectItem>
-                    <SelectItem value="credit">Credit Card</SelectItem>
-                    <SelectItem value="cash">Cash</SelectItem>
+                    {accounts.map((account) => (
+                      <SelectItem key={account.value} value={account.value}>
+                        {account.label}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
 
-              <Button type="submit" className="w-full" size="lg">
-                <Plus className="h-4 w-4 mr-2" />
-                Add {formData.type === 'income' ? 'Income' : 'Expense'}
+              {/* Notes */}
+              <div>
+                <Label htmlFor="notes">Notes (Optional)</Label>
+                <Textarea
+                  id="notes"
+                  placeholder="Additional notes about this transaction..."
+                  value={formData.notes}
+                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                  disabled={isSubmitting}
+                  rows={3}
+                />
+              </div>
+
+              <Button 
+                type="submit" 
+                className="w-full" 
+                size="lg" 
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Adding {formData.type === 'income' ? 'Income' : 'Expense'}...
+                  </>
+                ) : (
+                  <>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add {formData.type === 'income' ? 'Income' : 'Expense'}
+                  </>
+                )}
               </Button>
             </form>
           </CardContent>
@@ -284,6 +369,10 @@ const AddEntries = () => {
               <div className="flex items-center gap-2">
                 <Badge variant="secondary">🏷️</Badge>
                 <span className="text-sm">Consistent categories help with analysis</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge variant="secondary">📝</Badge>
+                <span className="text-sm">Use notes for additional context</span>
               </div>
             </div>
           </CardContent>
