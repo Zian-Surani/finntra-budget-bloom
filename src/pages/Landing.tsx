@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { DollarSign, TrendingUp, PieChart, CreditCard, Shield, Smartphone, Github, Linkedin, Mail, Phone } from 'lucide-react';
 import { ThemeToggle } from "@/components/ThemeToggle";
 import LandingMockupCarousel from "@/components/LandingMockupCarousel";
+import HeroStockImage from "@/components/HeroStockImage";
 
 const featureBubbles = [
   {
@@ -105,18 +106,14 @@ const Landing = () => {
       </header>
 
       {/* NEW HERO: Playful style, overlapping */}
-      <section className="relative py-24 sm:py-32 flex flex-col items-center z-10">
+      <section className="relative py-24 sm:py-32 flex flex-col items-center z-10 animate-fade-in">
         <div className="max-w-5xl mx-auto px-4 flex flex-col items-center text-center gap-4">
           <div className="relative flex items-center justify-center w-full">
             <div className="relative inline-block">
-              {/* mascot/graphic bubble style */}
-              <img
-                src="/lovable-uploads/62637124-2993-4040-a176-d1e9ed77f87d.png"
-                alt="FinnTra Mascot"
-                className="h-24 w-24 sm:h-32 sm:w-32 rounded-full bg-white ring-4 ring-blue-200 dark:ring-blue-700 shadow-lg mb-4 z-10 mx-auto animate-scale-in"
-              />
+              {/* New stock hero image */}
+              <HeroStockImage />
               <span className="absolute -top-4 -left-4 bg-gradient-to-br from-indigo-400 via-fuchsia-300 to-amber-200 text-white rounded-full px-4 py-2 text-lg font-bold shadow-lg rotate-[-10deg] animate-fade-in">
-                Hi! I'm Finny
+                Hi! I'm Secure
               </span>
             </div>
           </div>
@@ -140,33 +137,47 @@ const Landing = () => {
           <div className="flex justify-center space-x-4 mt-6 animate-fade-in delay-200">
             <Button
               size="lg"
-              className="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-blue-700 hover:to-indigo-700 hover-scale drop-shadow-xl shadow-blue-300"
-              onClick={() => window.location.href = '/login'}
+              className="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-blue-700 hover:to-indigo-700 hover:scale-105 drop-shadow-xl shadow-blue-300 smooth-btn"
+              onClick={(e) => {
+                e.currentTarget.classList.add("btn-pressed");
+                setTimeout(() => e.currentTarget.classList.remove("btn-pressed"), 240);
+                window.location.href = '/login';
+              }}
             >
               Get Started Free
             </Button>
             <Button
               size="lg"
               variant="outline"
-              className="hover-scale bg-white/50 dark:bg-slate-800/70 border-2 border-indigo-300 dark:border-indigo-700 shadow"
-              onClick={() => window.location.href = '/dashboard'}
+              className="hover:scale-105 bg-white/50 dark:bg-slate-800/70 border-2 border-indigo-300 dark:border-indigo-700 shadow smooth-btn"
+              onClick={(e) => {
+                e.currentTarget.classList.add("btn-pressed");
+                setTimeout(() => e.currentTarget.classList.remove("btn-pressed"), 240);
+                window.location.href = '/dashboard';
+              }}
             >
               Try Demo
             </Button>
           </div>
         </div>
-
         {/* playful circle illustration */}
-        <div className="absolute left-1/2 -translate-x-1/2 top-[88%]">
+        <div className="absolute left-1/2 -translate-x-1/2 top-[88%] pointer-events-none z-0">
           <div className="h-12 w-40 bg-gradient-to-br from-indigo-200 via-fuchsia-200 to-amber-100 rounded-full blur-2xl opacity-80"></div>
         </div>
       </section>
 
       {/* CAROUSEL MOCKUPS - Toshl style */}
-      <section className="relative py-10 z-10">
+      <section className="relative py-10 z-10 animate-fade-in">
         <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2 text-center animate-fade-in">Love your charts and reports</h3>
         <p className="text-lg text-gray-600 dark:text-gray-300 mb-5 text-center">Swipe through our colorful, cheerful, and powerful mockups!</p>
         <LandingMockupCarousel />
+        {/* Professional auto-scroll hint */}
+        <div className="mt-4 flex justify-center animate-fade-in">
+          <span className="inline-flex items-center bg-indigo-50 dark:bg-indigo-900 px-4 py-2 rounded-full text-indigo-700 dark:text-indigo-100 text-sm ring-1 ring-indigo-300 dark:ring-indigo-800 shadow-sm animate-slide-in-right">
+            <svg className="w-4 h-4 mr-2 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 17l4 4 4-4m-4-5v9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            Auto-scroll enabled for a better experience!
+          </span>
+        </div>
       </section>
 
       {/* Features Section */}
@@ -249,21 +260,21 @@ const Landing = () => {
       </section>
 
       {/* Mockups Section */}
-      <section className="py-12 bg-gradient-to-r from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
+      <section className="py-12 bg-gradient-to-r from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 animate-fade-in">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-3 gap-8">
-            <div className="p-6 bg-white dark:bg-gray-900 rounded-2xl shadow-lg flex flex-col items-center text-center animate-fade-in">
-              <img src="/lovable-uploads/62637124-2993-4040-a176-d1e9ed77f87d.png" className="w-20 h-20 mb-4" alt="Mobile Mockup"/>
+            <div className="p-6 bg-white dark:bg-gray-900 rounded-2xl shadow-lg flex flex-col items-center text-center animate-scale-in transition-all">
+              <Smartphone className="w-12 h-12 mb-4 text-indigo-500 bg-indigo-100 dark:bg-indigo-900 rounded-full p-2" />
               <h3 className="font-bold text-lg mb-2 text-gray-800 dark:text-white">Mobile-First Design</h3>
               <p className="text-gray-500 dark:text-gray-400">Track expenses easily from your phone. UI optimized for fast input anywhere, anytime.</p>
             </div>
-            <div className="p-6 bg-white dark:bg-gray-900 rounded-2xl shadow-lg flex flex-col items-center text-center animate-fade-in delay-100">
-              <img src="/lovable-uploads/62637124-2993-4040-a176-d1e9ed77f87d.png" className="w-20 h-20 mb-4" alt="Charts Mockup"/>
+            <div className="p-6 bg-white dark:bg-gray-900 rounded-2xl shadow-lg flex flex-col items-center text-center animate-scale-in delay-100 transition-all">
+              <DollarSign className="w-12 h-12 mb-4 text-green-600 bg-green-100 dark:bg-green-900 rounded-full p-2" />
               <h3 className="font-bold text-lg mb-2 text-gray-800 dark:text-white">AI-Powered Suggestions</h3>
               <p className="text-gray-500 dark:text-gray-400">Let the assistant help you save with personalized finance tips.</p>
             </div>
-            <div className="p-6 bg-white dark:bg-gray-900 rounded-2xl shadow-lg flex flex-col items-center text-center animate-fade-in delay-200">
-              <img src="/lovable-uploads/62637124-2993-4040-a176-d1e9ed77f87d.png" className="w-20 h-20 mb-4" alt="Desktop Mockup"/>
+            <div className="p-6 bg-white dark:bg-gray-900 rounded-2xl shadow-lg flex flex-col items-center text-center animate-scale-in delay-200 transition-all">
+              <PieChart className="w-12 h-12 mb-4 text-blue-600 bg-blue-100 dark:bg-blue-900 rounded-full p-2" />
               <h3 className="font-bold text-lg mb-2 text-gray-800 dark:text-white">Beautiful Visual Reports</h3>
               <p className="text-gray-500 dark:text-gray-400">Your finances, visualized in engaging and colorful ways on any device.</p>
             </div>
