@@ -145,7 +145,7 @@ const Landing = () => {
             {/* Bank Connections */}
             <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl p-8 text-center hover:scale-105 transition-transform">
               <div className="mb-6">
-                <img src="/lovable-uploads/7df32f9b-320d-44c0-a6e4-bdb6b8871ffa.png" alt="Bank connections mockup" className="w-full h-48 object-cover rounded-lg shadow-lg" />
+                
               </div>
               <h4 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">Bank connections</h4>
               <p className="text-gray-600 dark:text-gray-300 mb-4">12379 bank & financial service connections worldwide</p>
