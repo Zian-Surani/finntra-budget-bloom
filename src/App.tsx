@@ -28,6 +28,8 @@ const ProfileSettings = lazy(() => import("./pages/ProfileSettings"));
 const PrivacySettings = lazy(() => import("./pages/PrivacySettings"));
 const NotificationSettings = lazy(() => import("./pages/NotificationSettings"));
 const PasswordSettings = lazy(() => import("./pages/PasswordSettings"));
+const Cards = lazy(() => import("./pages/Cards"));
+const Accounts = lazy(() => import("./pages/Accounts"));
 
 const queryClient = new QueryClient();
 
@@ -54,6 +56,8 @@ const App = () => (
             <Route path="/privacy-settings" element={<Suspense fallback={<MessageLoading />}><PrivacySettings /></Suspense>} />
             <Route path="/notification-settings" element={<Suspense fallback={<MessageLoading />}><NotificationSettings /></Suspense>} />
             <Route path="/password-settings" element={<Suspense fallback={<MessageLoading />}><PasswordSettings /></Suspense>} />
+            <Route path="/cards" element={<Suspense fallback={<MessageLoading />}><Cards /></Suspense>} />
+            <Route path="/accounts" element={<Suspense fallback={<MessageLoading />}><Accounts /></Suspense>} />
             <Route path="/expense-report" element={<Suspense fallback={<MessageLoading />}><ExpenseReport /></Suspense>} />
             <Route path="/tax-calculator" element={<Suspense fallback={<MessageLoading />}><TaxCalculator /></Suspense>} />
             <Route path="/user-summary" element={<Suspense fallback={<MessageLoading />}><UserSummary /></Suspense>} />

@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Bell, ArrowLeft, Mail, Smartphone, Monitor } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
+import { emailService } from '@/services/emailService';
 
 const NotificationSettings = () => {
   const [settings, setSettings] = useState({
@@ -21,12 +22,67 @@ const NotificationSettings = () => {
     frequency: 'daily'
   });
 
-  const handleSettingChange = (key: keyof typeof settings, value: boolean | string) => {
+  const [notificationPermission, setNotificationPermission] = useState<string>('default');
+
+  useEffect(() => {
+    // Check current notification permission
+    if ('Notification' in window) {
+      setNotificationPermission(Notification.permission);
+    }
+  }, []);
+
+  const handleSettingChange = async (key: keyof typeof settings, value: boolean | string) => {
     setSettings(prev => ({
       ...prev,
       [key]: value
     }));
-    toast.success('Notification setting updated');
+
+    // If enabling push notifications, request permission
+    if (key === 'pushNotifications' && value === true) {
+      const hasPermission = await emailService.requestNotificationPermission();
+      if (hasPermission) {
+        setNotificationPermission('granted');
+        toast.success('Push notifications enabled successfully!');
+        
+        // Send a test notification
+        emailService.sendNotification({
+          to: 'user@example.com',
+          subject: 'Notifications Enabled',
+          message: 'You will now receive push notifications from FinnTra',
+          type: 'general'
+        });
+      } else {
+        setSettings(prev => ({ ...prev, pushNotifications: false }));
+        toast.error('Push notification permission denied');
+      }
+    } else {
+      toast.success('Notification setting updated');
+    }
+
+    // Send email notification about settings change if email notifications are enabled
+    if (settings.emailNotifications && key !== 'emailNotifications') {
+      emailService.sendNotification({
+        to: 'user@example.com',
+        subject: 'Notification Settings Updated',
+        message: `Your ${key.replace(/([A-Z])/g, ' $1').toLowerCase()} setting has been updated.`,
+        type: 'general'
+      });
+    }
+  };
+
+  const testNotifications = async () => {
+    toast.promise(
+      Promise.all([
+        emailService.sendSecurityAlert('user@example.com', 'This is a test security alert'),
+        emailService.sendTransactionAlert('user@example.com', 25.99, 'Coffee Shop'),
+        emailService.sendBudgetAlert('user@example.com', 'Dining', 85)
+      ]),
+      {
+        loading: 'Sending test notifications...',
+        success: 'Test notifications sent successfully!',
+        error: 'Failed to send test notifications'
+      }
+    );
   };
 
   return (
@@ -45,6 +101,19 @@ const NotificationSettings = () => {
       </header>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+        {/* Test Notifications */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Test Notifications</CardTitle>
+            <CardDescription>Send test notifications to verify your settings</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button onClick={testNotifications} className="w-full">
+              Send Test Notifications
+            </Button>
+          </CardContent>
+        </Card>
+
         {/* Delivery Methods */}
         <Card>
           <CardHeader>
@@ -70,12 +139,18 @@ const NotificationSettings = () => {
                 <Monitor className="h-5 w-5 text-green-600" />
                 <div className="space-y-0.5">
                   <Label>Push Notifications</Label>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Receive browser push notifications</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Receive browser push notifications
+                    {notificationPermission === 'denied' && (
+                      <span className="text-red-500 block">Permission denied - check browser settings</span>
+                    )}
+                  </p>
                 </div>
               </div>
               <Switch
                 checked={settings.pushNotifications}
                 onCheckedChange={(checked) => handleSettingChange('pushNotifications', checked)}
+                disabled={notificationPermission === 'denied'}
               />
             </div>
             <div className="flex items-center justify-between">

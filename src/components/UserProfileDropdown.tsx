@@ -9,7 +9,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { User, CreditCard, Building2, PieChart, FileText, MessageCircle, LogOut } from 'lucide-react';
+import { User, CreditCard, Building2, PieChart, FileText, MessageCircle, LogOut, Settings } from 'lucide-react';
 
 export const UserProfileDropdown = () => {
   const [showChatbot, setShowChatbot] = useState(false);
@@ -35,11 +35,11 @@ export const UserProfileDropdown = () => {
             </div>
           </div>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => window.location.href = '/bank-connections'}>
+          <DropdownMenuItem onClick={() => window.location.href = '/cards'}>
             <CreditCard className="mr-2 h-4 w-4" />
             <span>Cards</span>
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => window.location.href = '/bank-connections'}>
+          <DropdownMenuItem onClick={() => window.location.href = '/accounts'}>
             <Building2 className="mr-2 h-4 w-4" />
             <span>Accounts</span>
           </DropdownMenuItem>
@@ -56,6 +56,10 @@ export const UserProfileDropdown = () => {
             <span>Export Report to PDF</span>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={() => window.location.href = '/settings'}>
+            <Settings className="mr-2 h-4 w-4" />
+            <span>Settings</span>
+          </DropdownMenuItem>
           <DropdownMenuItem onClick={() => setShowChatbot(true)}>
             <MessageCircle className="mr-2 h-4 w-4" />
             <span>Income Management Chat</span>
