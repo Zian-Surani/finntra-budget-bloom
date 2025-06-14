@@ -138,7 +138,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         },
         banks: banks || [],
         savingsGoals: savingsGoals || [],
-        transactions: transactions || [],
+        transactions: (transactions || []).map(transaction => ({
+          ...transaction,
+          type: transaction.type as 'income' | 'expense'
+        })),
         currency: settings?.currency || 'USD',
         loading: false
       }));
