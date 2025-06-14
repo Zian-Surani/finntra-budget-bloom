@@ -86,12 +86,9 @@ const Landing = () => {
       <section className="relative py-24 sm:py-32 flex flex-col items-center z-10 animate-fade-in">
         <div className="max-w-5xl mx-auto px-4 flex flex-col items-center text-center gap-4">
           {/* Logo centered above hero image and headline */}
-          <img
-            src={HERO_LOGO_SRC}
-            alt="FinnTra Logo"
-            className="h-16 w-16 rounded-full mb-4 shadow-lg object-cover bg-white/90 z-20"
-            style={{ border: "2px solid #d2e4fa"}}
-          />
+          <img src={HERO_LOGO_SRC} alt="FinnTra Logo" className="h-16 w-16 rounded-full mb-4 shadow-lg object-cover bg-white/90 z-20" style={{
+          border: "2px solid #d2e4fa"
+        }} />
           <div className="relative flex items-center justify-center w-full">
             <HeroStockImage activeIndex={carouselIndex} />
           </div>
@@ -132,15 +129,7 @@ const Landing = () => {
         {/* Playful circle illustration (removed by user request) */}
       </section>
       {/* Professional auto-advance carousel with image sync */}
-      <section className="relative py-10 z-10 animate-fade-in">
-        <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2 text-center animate-fade-in">Love your charts and reports</h3>
-        <p className="text-lg text-gray-600 dark:text-gray-300 mb-5 text-center">Swipe through our colorful, cheerful, and powerful mockups!</p>
-        <LandingMockupCarousel onSlideChange={setCarouselIndex} />
-        {/* Professional auto-scroll hint */}
-        <div className="mt-4 flex justify-center animate-fade-in">
-          
-        </div>
-      </section>
+      
 
       {/* Features Section */}
       <section className="py-20 bg-white">
