@@ -1,4 +1,6 @@
+
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Card,
   CardContent,
@@ -15,11 +17,18 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
-import { DollarSign, Mail, Lock, User } from "lucide-react";
+import { DollarSign, Mail, Lock, User, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import DynamicAiHint from "@/components/DynamicAiHint";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 const Login = () => {
+  const navigate = useNavigate();
+  const { signIn, signUp, user, loading } = useAuth();
+  const { toast } = useToast();
+  
   const [loginData, setLoginData] = useState({ email: "", password: "" });
   const [signupData, setSignupData] = useState({
     name: "",
@@ -29,9 +38,18 @@ const Login = () => {
     captcha: "",
   });
   const [activeTab, setActiveTab] = useState("login");
-  const [rippleStyle, setRippleStyle] = useState<any>(null);
   const [captchaQuestion, setCaptchaQuestion] = useState("");
   const [captchaAnswer, setCaptchaAnswer] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user && !loading) {
+      // Check if user has completed onboarding by checking if they have profile data
+      navigate('/dashboard');
+    }
+  }, [user, loading, navigate]);
 
   // Generate random captcha on component mount and tab change
   useEffect(() => {
@@ -64,55 +82,90 @@ const Login = () => {
   };
 
   const handleLogoClick = () => {
-    window.location.href = "/";
+    navigate("/");
   };
 
-  const triggerRipple = (e: React.MouseEvent<HTMLButtonElement>) => {
-    const button = e.currentTarget;
-    const rect = button.getBoundingClientRect();
-    const size = Math.max(rect.width, rect.height);
-    const x = e.clientX - rect.left - size / 2;
-    const y = e.clientY - rect.top - size / 2;
-    setRippleStyle({ top: y, left: x, width: size, height: size });
-    setTimeout(() => setRippleStyle(null), 400);
-  };
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setIsLoading(true);
 
-  const handleLogin = () => {
-    console.log('Login attempt:', { email: loginData.email, password: loginData.password });
-    
-    // Check if user has completed onboarding
-    const onboardingComplete = localStorage.getItem('onboardingComplete');
-    
-    if (!onboardingComplete) {
-      // New user - redirect to onboarding
-      window.location.href = '/onboarding';
-    } else {
-      // Existing user - redirect to dashboard
-      window.location.href = '/dashboard';
+    try {
+      const { error } = await signIn(loginData.email, loginData.password);
+      
+      if (error) {
+        setError(error.message);
+        toast({
+          title: "Login Error",
+          description: error.message,
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Success",
+          description: "Successfully logged in!"
+        });
+        navigate('/dashboard');
+      }
+    } catch (err) {
+      setError("An unexpected error occurred");
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleSignup = (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
+
     if (signupData.captcha !== captchaAnswer) {
-      alert("Please solve the captcha correctly");
-      generateCaptcha(); // Generate new captcha on wrong answer
+      setError("Please solve the captcha correctly");
+      generateCaptcha();
       setSignupData({ ...signupData, captcha: "" });
       return;
     }
+    
     if (signupData.password !== signupData.confirmPassword) {
-      alert("Passwords do not match");
+      setError("Passwords do not match");
       return;
     }
-    // Clear onboarding flag to ensure new user goes through complete setup
-    localStorage.removeItem('onboardingComplete');
-    localStorage.removeItem('userData');
-    localStorage.removeItem('userBankData');
-    localStorage.removeItem('userSavingsData');
-    localStorage.removeItem('transactions');
-    // Redirect to onboarding for new users
-    window.location.href = "/onboarding";
+
+    if (signupData.password.length < 6) {
+      setError("Password must be at least 6 characters long");
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const { error } = await signUp(signupData.email, signupData.password, {
+        name: signupData.name
+      });
+      
+      if (error) {
+        setError(error.message);
+        toast({
+          title: "Signup Error",
+          description: error.message,
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Success",
+          description: "Account created! Please check your email to confirm your account."
+        });
+        navigate('/onboarding');
+      }
+    } catch (err) {
+      setError("An unexpected error occurred");
+    } finally {
+      setIsLoading(false);
+    }
   };
+
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex flex-col">
@@ -131,6 +184,7 @@ const Login = () => {
           </div>
         </div>
       </header>
+      
       <div className="flex items-center justify-center py-10 flex-1">
         <Card className="w-full max-w-md shadow-lg border-0 animate-fade-in">
           <CardHeader className="text-center">
@@ -142,20 +196,18 @@ const Login = () => {
           </CardHeader>
           <CardContent>
             <DynamicAiHint />
-            <Tabs defaultValue="login" value={activeTab} onValueChange={setActiveTab} className="space-y-6 transition-all duration-500">
-              <TabsList className="grid w-full grid-cols-2 overflow-hidden rounded-lg">
-                <TabsTrigger
-                  value="login"
-                  className={`transition-all duration-300 ${activeTab === "login" ? "bg-indigo-100" : ""}`}
-                >
-                  Login
-                </TabsTrigger>
-                <TabsTrigger
-                  value="signup"
-                  className={`transition-all duration-300 ${activeTab === "signup" ? "bg-indigo-100" : ""}`}
-                >
-                  Sign Up
-                </TabsTrigger>
+            
+            {error && (
+              <Alert variant="destructive" className="mb-4">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+
+            <Tabs defaultValue="login" value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="login">Login</TabsTrigger>
+                <TabsTrigger value="signup">Sign Up</TabsTrigger>
               </TabsList>
               
               <TabsContent value="login" className="space-y-4">
@@ -177,6 +229,7 @@ const Login = () => {
                         }
                         className="pl-10"
                         required
+                        disabled={isLoading}
                       />
                     </div>
                   </div>
@@ -197,23 +250,16 @@ const Login = () => {
                         }
                         className="pl-10"
                         required
+                        disabled={isLoading}
                       />
                     </div>
                   </div>
                   <Button
                     type="submit"
-                    className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 relative overflow-hidden ripple-btn hover:scale-105"
-                    onClick={triggerRipple}
+                    className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                    disabled={isLoading}
                   >
-                    {rippleStyle && (
-                      <span
-                        className="ripple"
-                        style={{
-                          ...rippleStyle,
-                        }}
-                      />
-                    )}
-                    Sign In
+                    {isLoading ? "Signing In..." : "Sign In"}
                   </Button>
                 </form>
               </TabsContent>
@@ -237,7 +283,7 @@ const Login = () => {
                         }
                         className="pl-10"
                         required
-                        autoComplete="off"
+                        disabled={isLoading}
                       />
                     </div>
                   </div>
@@ -258,7 +304,7 @@ const Login = () => {
                         }
                         className="pl-10"
                         required
-                        autoComplete="off"
+                        disabled={isLoading}
                       />
                     </div>
                   </div>
@@ -269,7 +315,7 @@ const Login = () => {
                       <Input
                         id="signup-password"
                         type="password"
-                        placeholder="Create a password"
+                        placeholder="Create a password (min 6 characters)"
                         value={signupData.password}
                         onChange={(e) =>
                           setSignupData({
@@ -279,7 +325,7 @@ const Login = () => {
                         }
                         className="pl-10"
                         required
-                        autoComplete="new-password"
+                        disabled={isLoading}
                       />
                     </div>
                   </div>
@@ -300,7 +346,7 @@ const Login = () => {
                         }
                         className="pl-10"
                         required
-                        autoComplete="new-password"
+                        disabled={isLoading}
                       />
                     </div>
                   </div>
@@ -316,40 +362,27 @@ const Login = () => {
                         size="sm" 
                         onClick={generateCaptcha}
                         className="ml-2 h-6 w-6 p-0 text-xs"
+                        disabled={isLoading}
                       >
                         🔄
                       </Button>
                     </Label>
-                    <div className="relative">
-                      <Input 
-                        id="signup-captcha" 
-                        type="text" 
-                        placeholder="Your answer" 
-                        className="pl-3"
-                        value={signupData.captcha}
-                        onChange={e => setSignupData({ ...signupData, captcha: e.target.value })}
-                        required 
-                        autoComplete="off" 
-                      />
-                    </div>
-                    <span className="text-xs text-muted-foreground block mt-0.5">
-                      Please solve the math question to continue.
-                    </span>
+                    <Input 
+                      id="signup-captcha" 
+                      type="text" 
+                      placeholder="Your answer" 
+                      value={signupData.captcha}
+                      onChange={e => setSignupData({ ...signupData, captcha: e.target.value })}
+                      required 
+                      disabled={isLoading}
+                    />
                   </div>
                   <Button
                     type="submit"
-                    className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 relative overflow-hidden ripple-btn hover:scale-105"
-                    onClick={triggerRipple}
+                    className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                    disabled={isLoading}
                   >
-                    {rippleStyle && (
-                      <span
-                        className="ripple"
-                        style={{
-                          ...rippleStyle,
-                        }}
-                      />
-                    )}
-                    Create Account
+                    {isLoading ? "Creating Account..." : "Create Account"}
                   </Button>
                 </form>
               </TabsContent>

@@ -1,26 +1,40 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
-import { Building2, DollarSign, Target, CheckCircle, Plus, User, Phone, MapPin, Briefcase } from 'lucide-react';
+import { Building2, DollarSign, Target, User, Phone, MapPin, Briefcase, CreditCard, Plus } from 'lucide-react';
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { useAuth } from '@/contexts/AuthContext';
 import { useAppContext } from '@/contexts/AppContext';
+import { useToast } from '@/hooks/use-toast';
 
 const Onboarding = () => {
-  const { updateUserData, updateBankData, updateSavingsData } = useAppContext();
+  const navigate = useNavigate();
+  const { user, loading } = useAuth();
+  const { updateUserData, addBank, addSavingsGoal, setCurrency } = useAppContext();
+  const { toast } = useToast();
+  
   const [currentStep, setCurrentStep] = useState(1);
-  const [userData, setUserData] = useState({
+  const [isLoading, setIsLoading] = useState(false);
+  
+  // Form data states
+  const [personalData, setPersonalData] = useState({
     name: '',
     email: '',
     phone: '',
-    address: '',
-    occupation: '',
-    income: ''
+    address: ''
   });
+  
+  const [professionalData, setProfessionalData] = useState({
+    occupation: '',
+    monthlyIncome: ''
+  });
+  
   const [bankData, setBankData] = useState({
     name: '',
     type: '',
@@ -28,20 +42,41 @@ const Onboarding = () => {
     accountNumber: '',
     routingNumber: ''
   });
+  
   const [savingsData, setSavingsData] = useState({
-    amount: '',
-    goal: '',
-    target: ''
+    goalName: '',
+    currentAmount: '',
+    targetAmount: ''
   });
+  
+  const [preferences, setPreferences] = useState({
+    currency: 'USD'
+  });
+
   const [customBank, setCustomBank] = useState('');
   const [showCustomBank, setShowCustomBank] = useState(false);
 
-  const totalSteps = 6;
+  const totalSteps = 7;
   const progress = (currentStep / totalSteps) * 100;
+
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate('/login');
+    }
+  }, [user, loading, navigate]);
+
+  // Pre-fill email if available
+  useEffect(() => {
+    if (user?.email) {
+      setPersonalData(prev => ({ ...prev, email: user.email }));
+    }
+  }, [user]);
 
   const banks = [
     'Chase', 'Bank of America', 'Wells Fargo', 'Citibank', 'Capital One',
-    'American Express', 'TD Bank', 'PNC Bank', 'HSBC', 'Other'
+    'American Express', 'TD Bank', 'PNC Bank', 'HSBC', 'US Bank',
+    'Truist', 'Fifth Third Bank', 'Citizens Bank', 'KeyBank', 'Other'
   ];
 
   const accountTypes = [
@@ -49,13 +84,25 @@ const Onboarding = () => {
     'Savings Account',
     'Money Market Account',
     'Certificate of Deposit (CD)',
-    'Credit Card'
+    'Credit Card Account',
+    'Investment Account'
   ];
 
   const occupations = [
     'Software Engineer', 'Teacher', 'Doctor', 'Lawyer', 'Engineer',
     'Marketing Specialist', 'Sales Representative', 'Consultant',
-    'Student', 'Retired', 'Entrepreneur', 'Other'
+    'Manager', 'Analyst', 'Designer', 'Accountant', 'Nurse',
+    'Student', 'Retired', 'Entrepreneur', 'Freelancer', 'Other'
+  ];
+
+  const currencies = [
+    { code: 'USD', name: 'US Dollar ($)' },
+    { code: 'EUR', name: 'Euro (€)' },
+    { code: 'GBP', name: 'British Pound (£)' },
+    { code: 'INR', name: 'Indian Rupee (₹)' },
+    { code: 'JPY', name: 'Japanese Yen (¥)' },
+    { code: 'CAD', name: 'Canadian Dollar (C$)' },
+    { code: 'AUD', name: 'Australian Dollar (A$)' }
   ];
 
   const handleBankSelect = (value: string) => {
@@ -76,35 +123,81 @@ const Onboarding = () => {
     }
   };
 
-  const handleNextStep = () => {
+  const handleNextStep = async () => {
     if (currentStep < totalSteps) {
       setCurrentStep(currentStep + 1);
     } else {
-      // Save all data and redirect to dashboard
-      updateUserData(userData);
-      updateBankData(bankData);
-      updateSavingsData(savingsData);
-      localStorage.setItem('onboardingComplete', 'true');
-      window.location.href = '/dashboard';
+      await handleCompleteOnboarding();
+    }
+  };
+
+  const handleCompleteOnboarding = async () => {
+    if (!user) return;
+    
+    setIsLoading(true);
+    
+    try {
+      // Update user profile
+      await updateUserData({
+        name: personalData.name,
+        email: personalData.email,
+        phone: personalData.phone,
+        address: personalData.address,
+        occupation: professionalData.occupation,
+        monthly_income: parseFloat(professionalData.monthlyIncome) || 0
+      });
+
+      // Add bank account
+      if (bankData.name && bankData.type) {
+        await addBank({
+          name: bankData.name,
+          type: bankData.type,
+          balance: parseFloat(bankData.balance) || 0,
+          account_number: bankData.accountNumber,
+          routing_number: bankData.routingNumber
+        });
+      }
+
+      // Add savings goal
+      if (savingsData.goalName && savingsData.targetAmount) {
+        await addSavingsGoal({
+          goal_name: savingsData.goalName,
+          current_amount: parseFloat(savingsData.currentAmount) || 0,
+          target_amount: parseFloat(savingsData.targetAmount) || 0
+        });
+      }
+
+      // Set currency preference
+      await setCurrency(preferences.currency);
+
+      toast({
+        title: "Setup Complete!",
+        description: "Your profile has been successfully created."
+      });
+
+      navigate('/dashboard');
+    } catch (error) {
+      console.error('Error completing onboarding:', error);
+      toast({
+        title: "Error",
+        description: "There was an error setting up your profile. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const isStepValid = () => {
     switch (currentStep) {
-      case 1:
-        return userData.name && userData.email;
-      case 2:
-        return userData.phone && userData.address;
-      case 3:
-        return userData.occupation && userData.income;
-      case 4:
-        return bankData.name && bankData.type;
-      case 5:
-        return bankData.balance && bankData.accountNumber;
-      case 6:
-        return savingsData.amount && savingsData.goal && savingsData.target;
-      default:
-        return false;
+      case 1: return personalData.name && personalData.email;
+      case 2: return personalData.phone && personalData.address;
+      case 3: return professionalData.occupation && professionalData.monthlyIncome;
+      case 4: return true; // Currency selection is optional
+      case 5: return bankData.name && bankData.type;
+      case 6: return bankData.balance && bankData.accountNumber;
+      case 7: return savingsData.goalName && savingsData.targetAmount;
+      default: return false;
     }
   };
 
@@ -124,8 +217,8 @@ const Onboarding = () => {
                 <Input
                   id="fullName"
                   placeholder="Enter your full name"
-                  value={userData.name}
-                  onChange={(e) => setUserData({ ...userData, name: e.target.value })}
+                  value={personalData.name}
+                  onChange={(e) => setPersonalData({ ...personalData, name: e.target.value })}
                   required
                 />
               </div>
@@ -135,8 +228,8 @@ const Onboarding = () => {
                   id="email"
                   type="email"
                   placeholder="Enter your email"
-                  value={userData.email}
-                  onChange={(e) => setUserData({ ...userData, email: e.target.value })}
+                  value={personalData.email}
+                  onChange={(e) => setPersonalData({ ...personalData, email: e.target.value })}
                   required
                 />
               </div>
@@ -159,8 +252,8 @@ const Onboarding = () => {
                   id="phone"
                   type="tel"
                   placeholder="Enter your phone number"
-                  value={userData.phone}
-                  onChange={(e) => setUserData({ ...userData, phone: e.target.value })}
+                  value={personalData.phone}
+                  onChange={(e) => setPersonalData({ ...personalData, phone: e.target.value })}
                   required
                 />
               </div>
@@ -168,9 +261,9 @@ const Onboarding = () => {
                 <Label htmlFor="address">Address *</Label>
                 <Input
                   id="address"
-                  placeholder="Enter your address"
-                  value={userData.address}
-                  onChange={(e) => setUserData({ ...userData, address: e.target.value })}
+                  placeholder="Enter your full address"
+                  value={personalData.address}
+                  onChange={(e) => setPersonalData({ ...personalData, address: e.target.value })}
                   required
                 />
               </div>
@@ -184,12 +277,12 @@ const Onboarding = () => {
             <CardHeader className="text-center">
               <Briefcase className="h-12 w-12 mx-auto mb-4 text-purple-600" />
               <CardTitle>Professional Information</CardTitle>
-              <CardDescription>Tell us about your work</CardDescription>
+              <CardDescription>Tell us about your work and income</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="occupation">Occupation *</Label>
-                <Select onValueChange={(value) => setUserData({ ...userData, occupation: value })}>
+                <Select onValueChange={(value) => setProfessionalData({ ...professionalData, occupation: value })}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select your occupation" />
                   </SelectTrigger>
@@ -206,8 +299,8 @@ const Onboarding = () => {
                   id="income"
                   type="number"
                   placeholder="Enter your monthly income"
-                  value={userData.income}
-                  onChange={(e) => setUserData({ ...userData, income: e.target.value })}
+                  value={professionalData.monthlyIncome}
+                  onChange={(e) => setProfessionalData({ ...professionalData, monthlyIncome: e.target.value })}
                   required
                 />
               </div>
@@ -219,9 +312,40 @@ const Onboarding = () => {
         return (
           <Card className="w-full max-w-md mx-auto">
             <CardHeader className="text-center">
+              <DollarSign className="h-12 w-12 mx-auto mb-4 text-yellow-600" />
+              <CardTitle>Currency Preference</CardTitle>
+              <CardDescription>Choose your preferred currency for the app</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label>Preferred Currency</Label>
+                <Select 
+                  value={preferences.currency} 
+                  onValueChange={(value) => setPreferences({ ...preferences, currency: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select your currency" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {currencies.map((currency) => (
+                      <SelectItem key={currency.code} value={currency.code}>
+                        {currency.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardContent>
+          </Card>
+        );
+
+      case 5:
+        return (
+          <Card className="w-full max-w-md mx-auto">
+            <CardHeader className="text-center">
               <Building2 className="h-12 w-12 mx-auto mb-4 text-blue-600" />
-              <CardTitle>Connect Your Bank</CardTitle>
-              <CardDescription>Select your primary bank to get started</CardDescription>
+              <CardTitle>Bank Information</CardTitle>
+              <CardDescription>Connect your primary bank account</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
@@ -271,11 +395,11 @@ const Onboarding = () => {
           </Card>
         );
 
-      case 5:
+      case 6:
         return (
           <Card className="w-full max-w-md mx-auto">
             <CardHeader className="text-center">
-              <DollarSign className="h-12 w-12 mx-auto mb-4 text-green-600" />
+              <CreditCard className="h-12 w-12 mx-auto mb-4 text-green-600" />
               <CardTitle>Account Details</CardTitle>
               <CardDescription>Enter your account information</CardDescription>
             </CardHeader>
@@ -314,34 +438,33 @@ const Onboarding = () => {
           </Card>
         );
 
-      case 6:
+      case 7:
         return (
           <Card className="w-full max-w-md mx-auto">
             <CardHeader className="text-center">
               <Target className="h-12 w-12 mx-auto mb-4 text-purple-600" />
               <CardTitle>Savings Goals</CardTitle>
-              <CardDescription>Set up your financial goals</CardDescription>
+              <CardDescription>Set up your first savings goal</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="currentSavings">Current Savings Amount *</Label>
+                <Label htmlFor="goalName">Goal Name *</Label>
                 <Input
-                  id="currentSavings"
-                  type="number"
-                  placeholder="Enter current savings"
-                  value={savingsData.amount}
-                  onChange={(e) => setSavingsData({ ...savingsData, amount: e.target.value })}
+                  id="goalName"
+                  placeholder="e.g., Emergency Fund, Vacation, New Car"
+                  value={savingsData.goalName}
+                  onChange={(e) => setSavingsData({ ...savingsData, goalName: e.target.value })}
                   required
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="savingsGoal">Savings Goal *</Label>
+                <Label htmlFor="currentAmount">Current Amount (Optional)</Label>
                 <Input
-                  id="savingsGoal"
-                  placeholder="e.g., Emergency Fund, Vacation, Car"
-                  value={savingsData.goal}
-                  onChange={(e) => setSavingsData({ ...savingsData, goal: e.target.value })}
-                  required
+                  id="currentAmount"
+                  type="number"
+                  placeholder="Enter current savings amount"
+                  value={savingsData.currentAmount}
+                  onChange={(e) => setSavingsData({ ...savingsData, currentAmount: e.target.value })}
                 />
               </div>
               <div className="space-y-2">
@@ -350,8 +473,8 @@ const Onboarding = () => {
                   id="targetAmount"
                   type="number"
                   placeholder="Enter target amount"
-                  value={savingsData.target}
-                  onChange={(e) => setSavingsData({ ...savingsData, target: e.target.value })}
+                  value={savingsData.targetAmount}
+                  onChange={(e) => setSavingsData({ ...savingsData, targetAmount: e.target.value })}
                   required
                 />
               </div>
@@ -363,6 +486,10 @@ const Onboarding = () => {
         return null;
     }
   };
+
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-blue-100 to-white dark:from-gray-950 dark:via-gray-900 dark:to-slate-950">
@@ -394,10 +521,10 @@ const Onboarding = () => {
         <div className="flex justify-center mt-8">
           <Button 
             onClick={handleNextStep}
-            disabled={!isStepValid()}
+            disabled={!isStepValid() || isLoading}
             className="px-8 py-3"
           >
-            {currentStep === totalSteps ? 'Complete Setup' : 'Continue'}
+            {isLoading ? 'Saving...' : (currentStep === totalSteps ? 'Complete Setup' : 'Continue')}
           </Button>
         </div>
       </div>

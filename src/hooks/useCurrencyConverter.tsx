@@ -7,7 +7,9 @@ const exchangeRates: Record<string, number> = {
   'INR': 83.25,
   'EUR': 0.92,
   'GBP': 0.79,
-  'JPY': 149.50
+  'JPY': 149.50,
+  'CAD': 1.35,
+  'AUD': 1.52
 };
 
 export const useCurrencyConverter = () => {
@@ -28,7 +30,9 @@ export const useCurrencyConverter = () => {
       'INR': '₹',
       'EUR': '€',
       'GBP': '£',
-      'JPY': '¥'
+      'JPY': '¥',
+      'CAD': 'C$',
+      'AUD': 'A$'
     };
     
     const convertedAmount = convertAmount(amount, 'USD', currency);
@@ -37,11 +41,15 @@ export const useCurrencyConverter = () => {
       maximumFractionDigits: currency === 'JPY' ? 0 : 2
     });
     
-    return `${symbols[currency as keyof typeof symbols]}${formattedNumber}`;
+    return `${symbols[currency as keyof typeof symbols] || currency}${formattedNumber}`;
   }, [convertAmount, state.currency]);
 
-  const setSelectedCurrency = (currency: string) => {
-    setCurrency(currency);
+  const setSelectedCurrency = async (currency: string) => {
+    try {
+      await setCurrency(currency);
+    } catch (error) {
+      console.error('Error setting currency:', error);
+    }
   };
 
   // Simulate real-time updates
@@ -52,7 +60,9 @@ export const useCurrencyConverter = () => {
         INR: prev.INR + (Math.random() - 0.5) * 0.1,
         EUR: prev.EUR + (Math.random() - 0.5) * 0.001,
         GBP: prev.GBP + (Math.random() - 0.5) * 0.001,
-        JPY: prev.JPY + (Math.random() - 0.5) * 0.1
+        JPY: prev.JPY + (Math.random() - 0.5) * 0.1,
+        CAD: prev.CAD + (Math.random() - 0.5) * 0.01,
+        AUD: prev.AUD + (Math.random() - 0.5) * 0.01
       }));
     }, 30000);
 

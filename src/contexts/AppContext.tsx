@@ -1,19 +1,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-
-interface BankData {
-  name: string;
-  type: string;
-  balance: string;
-  accountNumber?: string;
-  routingNumber?: string;
-}
-
-interface SavingsData {
-  amount: string;
-  goal: string;
-  target: string;
-}
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from './AuthContext';
 
 interface UserData {
   name: string;
@@ -21,7 +9,23 @@ interface UserData {
   phone?: string;
   address?: string;
   occupation?: string;
-  income?: string;
+  monthly_income?: number;
+}
+
+interface BankData {
+  id?: string;
+  name: string;
+  type: string;
+  balance: number;
+  account_number?: string;
+  routing_number?: string;
+}
+
+interface SavingsData {
+  id?: string;
+  goal_name: string;
+  current_amount: number;
+  target_amount: number;
 }
 
 interface Transaction {
@@ -35,189 +39,343 @@ interface Transaction {
 
 interface AppState {
   userData: UserData;
-  bankData: BankData;
-  savingsData: SavingsData;
+  banks: BankData[];
+  savingsGoals: SavingsData[];
   transactions: Transaction[];
-  totalBalance: number;
   currency: string;
+  loading: boolean;
 }
 
 interface AppContextType {
   state: AppState;
-  updateUserData: (data: Partial<UserData>) => void;
-  updateBankData: (data: Partial<BankData>) => void;
-  updateSavingsData: (data: Partial<SavingsData>) => void;
-  addTransaction: (transaction: Omit<Transaction, 'id'>) => void;
-  updateTransaction: (id: string, updates: Partial<Transaction>) => void;
-  deleteTransaction: (id: string) => void;
-  setCurrency: (currency: string) => void;
-  refreshData: () => void;
+  updateUserData: (data: Partial<UserData>) => Promise<void>;
+  addBank: (data: Omit<BankData, 'id'>) => Promise<void>;
+  updateBank: (id: string, data: Partial<BankData>) => Promise<void>;
+  deleteBank: (id: string) => Promise<void>;
+  addSavingsGoal: (data: Omit<SavingsData, 'id'>) => Promise<void>;
+  updateSavingsGoal: (id: string, data: Partial<SavingsData>) => Promise<void>;
+  deleteSavingsGoal: (id: string) => Promise<void>;
+  addTransaction: (transaction: Omit<Transaction, 'id'>) => Promise<void>;
+  updateTransaction: (id: string, updates: Partial<Transaction>) => Promise<void>;
+  deleteTransaction: (id: string) => Promise<void>;
+  setCurrency: (currency: string) => Promise<void>;
+  refreshData: () => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 const initialState: AppState = {
   userData: { name: '', email: '' },
-  bankData: { name: '', type: '', balance: '0' },
-  savingsData: { amount: '0', goal: '', target: '0' },
+  banks: [],
+  savingsGoals: [],
   transactions: [],
-  totalBalance: 0,
-  currency: 'USD'
+  currency: 'USD',
+  loading: true
 };
 
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const { user, session } = useAuth();
   const [state, setState] = useState<AppState>(initialState);
 
-  // Load data from localStorage on initialization
+  // Load data from Supabase when user is authenticated
   useEffect(() => {
-    const savedUserData = localStorage.getItem('userData');
-    const savedBankData = localStorage.getItem('userBankData');
-    const savedSavingsData = localStorage.getItem('userSavingsData');
-    const savedTransactions = localStorage.getItem('transactions');
-    const savedCurrency = localStorage.getItem('selectedCurrency');
+    if (user && session) {
+      loadUserData();
+      setupRealtimeSubscriptions();
+    } else {
+      setState(initialState);
+    }
+  }, [user, session]);
 
-    setState(prev => ({
-      ...prev,
-      userData: savedUserData ? JSON.parse(savedUserData) : prev.userData,
-      bankData: savedBankData ? JSON.parse(savedBankData) : prev.bankData,
-      savingsData: savedSavingsData ? JSON.parse(savedSavingsData) : prev.savingsData,
-      transactions: savedTransactions ? JSON.parse(savedTransactions) : prev.transactions,
-      currency: savedCurrency || prev.currency
-    }));
-  }, []);
-
-  // Save to localStorage and broadcast changes
-  const broadcastChange = (newState: AppState) => {
-    localStorage.setItem('userData', JSON.stringify(newState.userData));
-    localStorage.setItem('userBankData', JSON.stringify(newState.bankData));
-    localStorage.setItem('userSavingsData', JSON.stringify(newState.savingsData));
-    localStorage.setItem('transactions', JSON.stringify(newState.transactions));
-    localStorage.setItem('selectedCurrency', newState.currency);
+  const loadUserData = async () => {
+    if (!user) return;
     
-    // Broadcast to other tabs/windows
-    window.postMessage({ type: 'APP_STATE_UPDATE', data: newState }, '*');
+    setState(prev => ({ ...prev, loading: true }));
+
+    try {
+      // Load profile data
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      // Load banks
+      const { data: banks } = await supabase
+        .from('banks')
+        .select('*')
+        .eq('user_id', user.id);
+
+      // Load savings goals
+      const { data: savingsGoals } = await supabase
+        .from('savings_goals')
+        .select('*')
+        .eq('user_id', user.id);
+
+      // Load transactions
+      const { data: transactions } = await supabase
+        .from('transactions')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      // Load user settings
+      const { data: settings } = await supabase
+        .from('user_settings')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      setState(prev => ({
+        ...prev,
+        userData: {
+          name: profile?.name || '',
+          email: profile?.email || '',
+          phone: profile?.phone || '',
+          address: profile?.address || '',
+          occupation: profile?.occupation || '',
+          monthly_income: profile?.monthly_income || 0
+        },
+        banks: banks || [],
+        savingsGoals: savingsGoals || [],
+        transactions: transactions || [],
+        currency: settings?.currency || 'USD',
+        loading: false
+      }));
+    } catch (error) {
+      console.error('Error loading user data:', error);
+      setState(prev => ({ ...prev, loading: false }));
+    }
   };
 
-  // Listen for changes from other tabs/windows
-  useEffect(() => {
-    const handleMessage = (event: MessageEvent) => {
-      if (event.data.type === 'APP_STATE_UPDATE') {
-        setState(event.data.data);
-      }
+  const setupRealtimeSubscriptions = () => {
+    if (!user) return;
+
+    // Subscribe to all table changes for the current user
+    const subscription = supabase
+      .channel('user-data-changes')
+      .on('postgres_changes', 
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'profiles',
+          filter: `id=eq.${user.id}`
+        }, 
+        () => loadUserData()
+      )
+      .on('postgres_changes', 
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'banks',
+          filter: `user_id=eq.${user.id}`
+        }, 
+        () => loadUserData()
+      )
+      .on('postgres_changes', 
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'savings_goals',
+          filter: `user_id=eq.${user.id}`
+        }, 
+        () => loadUserData()
+      )
+      .on('postgres_changes', 
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'transactions',
+          filter: `user_id=eq.${user.id}`
+        }, 
+        () => loadUserData()
+      )
+      .on('postgres_changes', 
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'user_settings',
+          filter: `user_id=eq.${user.id}`
+        }, 
+        () => loadUserData()
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(subscription);
     };
-
-    window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
-  }, []);
-
-  const updateUserData = (data: Partial<UserData>) => {
-    setState(prev => {
-      const newState = {
-        ...prev,
-        userData: { ...prev.userData, ...data }
-      };
-      broadcastChange(newState);
-      return newState;
-    });
   };
 
-  const updateBankData = (data: Partial<BankData>) => {
-    setState(prev => {
-      const newState = {
-        ...prev,
-        bankData: { ...prev.bankData, ...data },
-        totalBalance: data.balance ? parseFloat(data.balance) : prev.totalBalance
-      };
-      broadcastChange(newState);
-      return newState;
-    });
+  const updateUserData = async (data: Partial<UserData>) => {
+    if (!user) return;
+
+    const { error } = await supabase
+      .from('profiles')
+      .update(data)
+      .eq('id', user.id);
+
+    if (error) {
+      console.error('Error updating user data:', error);
+      throw error;
+    }
   };
 
-  const updateSavingsData = (data: Partial<SavingsData>) => {
-    setState(prev => {
-      const newState = {
-        ...prev,
-        savingsData: { ...prev.savingsData, ...data }
-      };
-      broadcastChange(newState);
-      return newState;
-    });
+  const addBank = async (data: Omit<BankData, 'id'>) => {
+    if (!user) return;
+
+    const { error } = await supabase
+      .from('banks')
+      .insert([{ ...data, user_id: user.id }]);
+
+    if (error) {
+      console.error('Error adding bank:', error);
+      throw error;
+    }
   };
 
-  const addTransaction = (transaction: Omit<Transaction, 'id'>) => {
-    setState(prev => {
-      const newTransaction = {
-        ...transaction,
-        id: Date.now().toString()
-      };
-      const newState = {
-        ...prev,
-        transactions: [newTransaction, ...prev.transactions]
-      };
-      broadcastChange(newState);
-      return newState;
-    });
+  const updateBank = async (id: string, data: Partial<BankData>) => {
+    if (!user) return;
+
+    const { error } = await supabase
+      .from('banks')
+      .update(data)
+      .eq('id', id)
+      .eq('user_id', user.id);
+
+    if (error) {
+      console.error('Error updating bank:', error);
+      throw error;
+    }
   };
 
-  const updateTransaction = (id: string, updates: Partial<Transaction>) => {
-    setState(prev => {
-      const newState = {
-        ...prev,
-        transactions: prev.transactions.map(t => 
-          t.id === id ? { ...t, ...updates } : t
-        )
-      };
-      broadcastChange(newState);
-      return newState;
-    });
+  const deleteBank = async (id: string) => {
+    if (!user) return;
+
+    const { error } = await supabase
+      .from('banks')
+      .delete()
+      .eq('id', id)
+      .eq('user_id', user.id);
+
+    if (error) {
+      console.error('Error deleting bank:', error);
+      throw error;
+    }
   };
 
-  const deleteTransaction = (id: string) => {
-    setState(prev => {
-      const newState = {
-        ...prev,
-        transactions: prev.transactions.filter(t => t.id !== id)
-      };
-      broadcastChange(newState);
-      return newState;
-    });
+  const addSavingsGoal = async (data: Omit<SavingsData, 'id'>) => {
+    if (!user) return;
+
+    const { error } = await supabase
+      .from('savings_goals')
+      .insert([{ ...data, user_id: user.id }]);
+
+    if (error) {
+      console.error('Error adding savings goal:', error);
+      throw error;
+    }
   };
 
-  const setCurrency = (currency: string) => {
-    setState(prev => {
-      const newState = {
-        ...prev,
-        currency
-      };
-      broadcastChange(newState);
-      return newState;
-    });
+  const updateSavingsGoal = async (id: string, data: Partial<SavingsData>) => {
+    if (!user) return;
+
+    const { error } = await supabase
+      .from('savings_goals')
+      .update(data)
+      .eq('id', id)
+      .eq('user_id', user.id);
+
+    if (error) {
+      console.error('Error updating savings goal:', error);
+      throw error;
+    }
   };
 
-  const refreshData = () => {
-    // Force refresh from localStorage
-    const savedUserData = localStorage.getItem('userData');
-    const savedBankData = localStorage.getItem('userBankData');
-    const savedSavingsData = localStorage.getItem('userSavingsData');
-    const savedTransactions = localStorage.getItem('transactions');
-    const savedCurrency = localStorage.getItem('selectedCurrency');
+  const deleteSavingsGoal = async (id: string) => {
+    if (!user) return;
 
-    setState({
-      userData: savedUserData ? JSON.parse(savedUserData) : initialState.userData,
-      bankData: savedBankData ? JSON.parse(savedBankData) : initialState.bankData,
-      savingsData: savedSavingsData ? JSON.parse(savedSavingsData) : initialState.savingsData,
-      transactions: savedTransactions ? JSON.parse(savedTransactions) : initialState.transactions,
-      totalBalance: savedBankData ? parseFloat(JSON.parse(savedBankData).balance || '0') : 0,
-      currency: savedCurrency || initialState.currency
-    });
+    const { error } = await supabase
+      .from('savings_goals')
+      .delete()
+      .eq('id', id)
+      .eq('user_id', user.id);
+
+    if (error) {
+      console.error('Error deleting savings goal:', error);
+      throw error;
+    }
+  };
+
+  const addTransaction = async (transaction: Omit<Transaction, 'id'>) => {
+    if (!user) return;
+
+    const { error } = await supabase
+      .from('transactions')
+      .insert([{ ...transaction, user_id: user.id }]);
+
+    if (error) {
+      console.error('Error adding transaction:', error);
+      throw error;
+    }
+  };
+
+  const updateTransaction = async (id: string, updates: Partial<Transaction>) => {
+    if (!user) return;
+
+    const { error } = await supabase
+      .from('transactions')
+      .update(updates)
+      .eq('id', id)
+      .eq('user_id', user.id);
+
+    if (error) {
+      console.error('Error updating transaction:', error);
+      throw error;
+    }
+  };
+
+  const deleteTransaction = async (id: string) => {
+    if (!user) return;
+
+    const { error } = await supabase
+      .from('transactions')
+      .delete()
+      .eq('id', id)
+      .eq('user_id', user.id);
+
+    if (error) {
+      console.error('Error deleting transaction:', error);
+      throw error;
+    }
+  };
+
+  const setCurrency = async (currency: string) => {
+    if (!user) return;
+
+    const { error } = await supabase
+      .from('user_settings')
+      .upsert([{ user_id: user.id, currency }]);
+
+    if (error) {
+      console.error('Error updating currency:', error);
+      throw error;
+    }
+  };
+
+  const refreshData = async () => {
+    await loadUserData();
   };
 
   return (
     <AppContext.Provider value={{
       state,
       updateUserData,
-      updateBankData,
-      updateSavingsData,
+      addBank,
+      updateBank,
+      deleteBank,
+      addSavingsGoal,
+      updateSavingsGoal,
+      deleteSavingsGoal,
       addTransaction,
       updateTransaction,
       deleteTransaction,
