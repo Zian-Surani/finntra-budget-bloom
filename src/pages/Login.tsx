@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/tabs";
 import { DollarSign, Mail, Lock, User } from "lucide-react";
 import DynamicAiHint from "@/components/DynamicAiHint";
-import ThemeToggle from "@/components/ThemeToggle";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const Login = () => {
   const [loginData, setLoginData] = useState({ email: "", password: "" });
