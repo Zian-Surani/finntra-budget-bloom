@@ -3,6 +3,37 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { DollarSign, TrendingUp, PieChart, CreditCard, Shield, Smartphone, Github, Linkedin, Mail, Phone } from 'lucide-react';
 import { ThemeToggle } from "@/components/ThemeToggle";
+import LandingMockupCarousel from "@/components/LandingMockupCarousel";
+
+const featureBubbles = [
+  {
+    text: "Automatic Sync",
+    emoji: "🔗",
+  },
+  {
+    text: "Playful Reports",
+    emoji: "📊",
+  },
+  {
+    text: "Multi-currency",
+    emoji: "💲",
+  },
+  {
+    text: "AI Assistant",
+    emoji: "🤖",
+  },
+];
+
+const bgGradients = (
+  <>
+    {/* Color Splashes */}
+    <div className="absolute inset-0 -z-10">
+      <div className="absolute left-[-10vw] top-[-10vw] w-[45vw] h-[35vw] bg-gradient-to-br from-indigo-300/30 to-blue-500/20 rounded-full blur-3xl animate-fade-in" />
+      <div className="absolute right-[-7vw] top-28 w-[30vw] h-[28vw] bg-gradient-to-br from-yellow-200/30 via-indigo-300/20 to-blue-400/10 rounded-full blur-3xl animate-fade-in delay-100" />
+      <div className="absolute left-1/4 top-[64vh] w-[40vw] h-[26vw] bg-gradient-to-tr from-fuchsia-300/30 to-blue-200/30 rounded-full blur-3xl animate-fade-in delay-200" />
+    </div>
+  </>
+);
 
 const Landing = () => {
   const features = [
@@ -43,7 +74,8 @@ const Landing = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+    <div className="relative min-h-screen font-sans overflow-x-hidden bg-gradient-to-br from-indigo-50 via-blue-100 to-white dark:from-gray-950 dark:via-gray-900 dark:to-slate-950 transition-colors duration-700">
+      {bgGradients}
       {/* Header */}
       <header className="bg-white shadow-sm border-b dark:bg-gray-900 dark:border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -72,27 +104,69 @@ const Landing = () => {
         </div>
       </header>
 
-      {/* Hero Section with Animation */}
-      <section className="py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="animate-fade-in">
-            <h2 className="text-5xl font-bold text-gray-900 mb-6">
-              Take Control of Your <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Finances</span>
-            </h2>
-            <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-              FinnTra is a modern, intelligent finance tracker that helps you manage your money, 
-              set budgets, track expenses, and achieve your financial goals with ease.
-            </p>
-            <div className="flex justify-center space-x-4">
-              <Button size="lg" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 hover-scale" onClick={() => window.location.href = '/login'}>
-                Start Tracking Now
-              </Button>
-              <Button size="lg" variant="outline" className="hover-scale" onClick={() => window.location.href = '/dashboard'}>
-                View Demo
-              </Button>
+      {/* NEW HERO: Playful style, overlapping */}
+      <section className="relative py-24 sm:py-32 flex flex-col items-center z-10">
+        <div className="max-w-5xl mx-auto px-4 flex flex-col items-center text-center gap-4">
+          <div className="relative flex items-center justify-center w-full">
+            <div className="relative inline-block">
+              {/* mascot/graphic bubble style */}
+              <img
+                src="/lovable-uploads/62637124-2993-4040-a176-d1e9ed77f87d.png"
+                alt="FinnTra Mascot"
+                className="h-24 w-24 sm:h-32 sm:w-32 rounded-full bg-white ring-4 ring-blue-200 dark:ring-blue-700 shadow-lg mb-4 z-10 mx-auto animate-scale-in"
+              />
+              <span className="absolute -top-4 -left-4 bg-gradient-to-br from-indigo-400 via-fuchsia-300 to-amber-200 text-white rounded-full px-4 py-2 text-lg font-bold shadow-lg rotate-[-10deg] animate-fade-in">
+                Hi! I'm Finny
+              </span>
             </div>
           </div>
+          <h1 className="text-5xl sm:text-6xl font-extrabold text-gray-800 dark:text-white mb-3 leading-tight tracking-tight animate-fade-in">
+            Your finances, <span className="bg-gradient-to-r from-indigo-600 to-blue-500 bg-clip-text text-transparent">happy</span> and under control
+          </h1>
+          <p className="text-xl sm:text-2xl text-gray-700 dark:text-gray-200 mb-4 max-w-2xl mx-auto animate-fade-in delay-100">
+            FinnTra brings color and fun to your money management. See the big picture, get playful insights, save more painlessly.
+          </p>
+          <div className="flex flex-wrap justify-center gap-3 my-4">
+            {featureBubbles.map((f, i) => (
+              <span
+                key={f.text}
+                className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-br from-indigo-100 via-fuchsia-100 to-amber-100 dark:from-indigo-900 dark:via-fuchsia-900 dark:to-amber-900 shadow hover:scale-105 transition-all text-gray-800 dark:text-gray-200 font-semibold text-md animate-scale-in"
+                style={{ animationDelay: `${150 + i * 60}ms` }}
+              >
+                <span className="mr-2">{f.emoji}</span> {f.text}
+              </span>
+            ))}
+          </div>
+          <div className="flex justify-center space-x-4 mt-6 animate-fade-in delay-200">
+            <Button
+              size="lg"
+              className="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-blue-700 hover:to-indigo-700 hover-scale drop-shadow-xl shadow-blue-300"
+              onClick={() => window.location.href = '/login'}
+            >
+              Get Started Free
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              className="hover-scale bg-white/50 dark:bg-slate-800/70 border-2 border-indigo-300 dark:border-indigo-700 shadow"
+              onClick={() => window.location.href = '/dashboard'}
+            >
+              Try Demo
+            </Button>
+          </div>
         </div>
+
+        {/* playful circle illustration */}
+        <div className="absolute left-1/2 -translate-x-1/2 top-[88%]">
+          <div className="h-12 w-40 bg-gradient-to-br from-indigo-200 via-fuchsia-200 to-amber-100 rounded-full blur-2xl opacity-80"></div>
+        </div>
+      </section>
+
+      {/* CAROUSEL MOCKUPS - Toshl style */}
+      <section className="relative py-10 z-10">
+        <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2 text-center animate-fade-in">Love your charts and reports</h3>
+        <p className="text-lg text-gray-600 dark:text-gray-300 mb-5 text-center">Swipe through our colorful, cheerful, and powerful mockups!</p>
+        <LandingMockupCarousel />
       </section>
 
       {/* Features Section */}
