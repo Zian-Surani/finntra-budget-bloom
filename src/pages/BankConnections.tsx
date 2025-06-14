@@ -1,8 +1,7 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { CreditCard, Shield, Globe, Zap, ArrowLeft, CheckCircle, Bank, Users, TrendingUp } from 'lucide-react';
+import { CreditCard, Shield, Globe, Zap, ArrowLeft, CheckCircle, Building2, Users, TrendingUp } from 'lucide-react';
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 const BankConnections = () => {
@@ -148,7 +147,7 @@ const BankConnections = () => {
           <div className="grid grid-cols-3 md:grid-cols-5 gap-4">
             {supportedBanks.map((bank, index) => (
               <div key={index} className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg text-center hover:scale-105 transition-transform duration-200">
-                <Bank className="h-8 w-8 mx-auto mb-2 text-blue-600" />
+                <Building2 className="h-8 w-8 mx-auto mb-2 text-blue-600" />
                 <p className="text-sm font-medium text-gray-900 dark:text-white">{bank}</p>
               </div>
             ))}
