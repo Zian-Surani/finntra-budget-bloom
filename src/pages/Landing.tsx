@@ -6,89 +6,64 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import LandingMockupCarousel from "@/components/LandingMockupCarousel";
 import HeroStockImage from "@/components/HeroStockImage";
 import { useState } from "react";
-
-const featureBubbles = [
-  {
-    text: "Automatic Sync",
-    emoji: "🔗",
-  },
-  {
-    text: "Playful Reports",
-    emoji: "📊",
-  },
-  {
-    text: "Multi-currency",
-    emoji: "💲",
-  },
-  {
-    text: "AI Assistant",
-    emoji: "🤖",
-  },
-];
-
-const bgGradients = (
-  <>
+const featureBubbles = [{
+  text: "Automatic Sync",
+  emoji: "🔗"
+}, {
+  text: "Playful Reports",
+  emoji: "📊"
+}, {
+  text: "Multi-currency",
+  emoji: "💲"
+}, {
+  text: "AI Assistant",
+  emoji: "🤖"
+}];
+const bgGradients = <>
     {/* Color Splashes */}
     <div className="absolute inset-0 -z-10">
       <div className="absolute left-[-10vw] top-[-10vw] w-[45vw] h-[35vw] bg-gradient-to-br from-indigo-300/30 to-blue-500/20 rounded-full blur-3xl animate-fade-in" />
       <div className="absolute right-[-7vw] top-28 w-[30vw] h-[28vw] bg-gradient-to-br from-yellow-200/30 via-indigo-300/20 to-blue-400/10 rounded-full blur-3xl animate-fade-in delay-100" />
       <div className="absolute left-1/4 top-[64vh] w-[40vw] h-[26vw] bg-gradient-to-tr from-fuchsia-300/30 to-blue-200/30 rounded-full blur-3xl animate-fade-in delay-200" />
     </div>
-  </>
-);
-
+  </>;
 const Landing = () => {
   const [carouselIndex, setCarouselIndex] = useState(0);
-
-  const features = [
-    {
-      icon: TrendingUp,
-      title: "Smart Analytics",
-      description: "Get AI-powered insights into your spending patterns and financial health."
-    },
-    {
-      icon: PieChart,
-      title: "Visual Reports",
-      description: "Interactive charts and graphs to visualize your financial data."
-    },
-    {
-      icon: CreditCard,
-      title: "Bank Sync",
-      description: "Connect multiple bank accounts and credit cards for automatic tracking."
-    },
-    {
-      icon: Shield,
-      title: "Secure & Private",
-      description: "Your financial data is encrypted and stored securely."
-    },
-    {
-      icon: Smartphone,
-      title: "Multi-Currency",
-      description: "Support for multiple currencies including INR, USD, EUR, and more."
-    },
-    {
-      icon: DollarSign,
-      title: "Budget Management",
-      description: "Set budgets, track expenses, and get alerts when you're overspending."
-    }
-  ];
-
+  const features = [{
+    icon: TrendingUp,
+    title: "Smart Analytics",
+    description: "Get AI-powered insights into your spending patterns and financial health."
+  }, {
+    icon: PieChart,
+    title: "Visual Reports",
+    description: "Interactive charts and graphs to visualize your financial data."
+  }, {
+    icon: CreditCard,
+    title: "Bank Sync",
+    description: "Connect multiple bank accounts and credit cards for automatic tracking."
+  }, {
+    icon: Shield,
+    title: "Secure & Private",
+    description: "Your financial data is encrypted and stored securely."
+  }, {
+    icon: Smartphone,
+    title: "Multi-Currency",
+    description: "Support for multiple currencies including INR, USD, EUR, and more."
+  }, {
+    icon: DollarSign,
+    title: "Budget Management",
+    description: "Set budgets, track expenses, and get alerts when you're overspending."
+  }];
   const handleLogoClick = () => {
     window.location.href = '/';
   };
-
-  return (
-    <div className="relative min-h-screen font-sans overflow-x-hidden bg-gradient-to-br from-indigo-50 via-blue-100 to-white dark:from-gray-950 dark:via-gray-900 dark:to-slate-950 transition-colors duration-700">
+  return <div className="relative min-h-screen font-sans overflow-x-hidden bg-gradient-to-br from-indigo-50 via-blue-100 to-white dark:from-gray-950 dark:via-gray-900 dark:to-slate-950 transition-colors duration-700">
       {bgGradients}
       {/* Header */}
       <header className="bg-white shadow-sm border-b dark:bg-gray-900 dark:border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-3 cursor-pointer" onClick={handleLogoClick}>
-            <img 
-              src="/lovable-uploads/62637124-2993-4040-a176-d1e9ed77f87d.png" 
-              alt="FinnTra Logo" 
-              className="h-10 w-10"
-            />
+            <img src="/lovable-uploads/62637124-2993-4040-a176-d1e9ed77f87d.png" alt="FinnTra Logo" className="h-10 w-10" />
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">FinnTra</h1>
           </div>
           <div className="flex space-x-2 items-center">
@@ -119,38 +94,25 @@ const Landing = () => {
             FinnTra brings color and fun to your money management. See the big picture, get playful insights, save more painlessly.
           </p>
           <div className="flex flex-wrap justify-center gap-3 my-4">
-            {featureBubbles.map((f, i) => (
-              <span
-                key={f.text}
-                className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-br from-indigo-100 via-fuchsia-100 to-amber-100 dark:from-indigo-900 dark:via-fuchsia-900 dark:to-amber-900 shadow hover:scale-105 transition-all text-gray-800 dark:text-gray-200 font-semibold text-md animate-scale-in"
-                style={{ animationDelay: `${150 + i * 60}ms` }}
-              >
+            {featureBubbles.map((f, i) => <span key={f.text} className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-br from-indigo-100 via-fuchsia-100 to-amber-100 dark:from-indigo-900 dark:via-fuchsia-900 dark:to-amber-900 shadow hover:scale-105 transition-all text-gray-800 dark:text-gray-200 font-semibold text-md animate-scale-in" style={{
+            animationDelay: `${150 + i * 60}ms`
+          }}>
                 <span className="mr-2">{f.emoji}</span> {f.text}
-              </span>
-            ))}
+              </span>)}
           </div>
           <div className="flex justify-center space-x-4 mt-6 animate-fade-in delay-200">
-            <Button
-              size="lg"
-              className="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-blue-700 hover:to-indigo-700 hover:scale-105 drop-shadow-xl shadow-blue-300 smooth-btn"
-              onClick={(e) => {
-                e.currentTarget.classList.add("btn-pressed");
-                setTimeout(() => e.currentTarget.classList.remove("btn-pressed"), 240);
-                window.location.href = '/login';
-              }}
-            >
+            <Button size="lg" className="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-blue-700 hover:to-indigo-700 hover:scale-105 drop-shadow-xl shadow-blue-300 smooth-btn" onClick={e => {
+            e.currentTarget.classList.add("btn-pressed");
+            setTimeout(() => e.currentTarget.classList.remove("btn-pressed"), 240);
+            window.location.href = '/login';
+          }}>
               Get Started Free
             </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="hover:scale-105 bg-white/50 dark:bg-slate-800/70 border-2 border-indigo-300 dark:border-indigo-700 shadow smooth-btn"
-              onClick={(e) => {
-                e.currentTarget.classList.add("btn-pressed");
-                setTimeout(() => e.currentTarget.classList.remove("btn-pressed"), 240);
-                window.location.href = '/dashboard';
-              }}
-            >
+            <Button size="lg" variant="outline" className="hover:scale-105 bg-white/50 dark:bg-slate-800/70 border-2 border-indigo-300 dark:border-indigo-700 shadow smooth-btn" onClick={e => {
+            e.currentTarget.classList.add("btn-pressed");
+            setTimeout(() => e.currentTarget.classList.remove("btn-pressed"), 240);
+            window.location.href = '/dashboard';
+          }}>
               Try Demo
             </Button>
           </div>
@@ -167,10 +129,7 @@ const Landing = () => {
         <LandingMockupCarousel onSlideChange={setCarouselIndex} />
         {/* Professional auto-scroll hint */}
         <div className="mt-4 flex justify-center animate-fade-in">
-          <span className="inline-flex items-center bg-indigo-50 dark:bg-indigo-900 px-4 py-2 rounded-full text-indigo-700 dark:text-indigo-100 text-sm ring-1 ring-indigo-300 dark:ring-indigo-800 shadow-sm animate-slide-in-right">
-            <svg className="w-4 h-4 mr-2 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 17l4 4 4-4m-4-5v9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-            Auto-scroll enabled for a better experience!
-          </span>
+          
         </div>
       </section>
 
@@ -182,8 +141,7 @@ const Landing = () => {
             <p className="text-lg text-gray-600">Powerful features to help you master your finances</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {features.map((feature, index) => (
-              <Card key={index} className="shadow-lg border-0 hover:scale-105 transition-transform hover:shadow-xl">
+            {features.map((feature, index) => <Card key={index} className="shadow-lg border-0 hover:scale-105 transition-transform hover:shadow-xl">
                 <CardHeader>
                   <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-3 rounded-lg w-fit">
                     <feature.icon className="h-6 w-6 text-white" />
@@ -193,8 +151,7 @@ const Landing = () => {
                 <CardContent>
                   <CardDescription className="text-gray-600">{feature.description}</CardDescription>
                 </CardContent>
-              </Card>
-            ))}
+              </Card>)}
           </div>
         </div>
       </section>
@@ -280,19 +237,13 @@ const Landing = () => {
       <footer className="bg-gray-900 text-white py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="flex items-center justify-center space-x-3 mb-4 cursor-pointer" onClick={handleLogoClick}>
-            <img 
-              src="/lovable-uploads/62637124-2993-4040-a176-d1e9ed77f87d.png" 
-              alt="FinnTra Logo" 
-              className="h-8 w-8"
-            />
+            <img src="/lovable-uploads/62637124-2993-4040-a176-d1e9ed77f87d.png" alt="FinnTra Logo" className="h-8 w-8" />
             <h1 className="text-2xl font-bold">FinnTra</h1>
           </div>
           <p className="text-gray-400 mb-4">© 2024 FinnTra. All rights reserved.</p>
           <p className="text-gray-400">Your financial journey starts here.</p>
         </div>
       </footer>
-    </div>
-  );
+    </div>;
 };
-
 export default Landing;
