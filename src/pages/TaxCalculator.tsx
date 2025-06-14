@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calculator, Home, Download, RefreshCw } from 'lucide-react';
+import { Calculator, Home, Download, RefreshCw, Globe } from 'lucide-react';
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useCurrencyConverter } from "@/hooks/useCurrencyConverter";
 
@@ -15,30 +15,35 @@ interface TaxBracket {
   rate: number;
 }
 
-interface TaxData {
-  year: number;
+interface CountryTaxData {
+  name: string;
+  currency: string;
   brackets: TaxBracket[];
-  standardDeduction: {
-    single: number;
-    marriedJoint: number;
-    marriedSeparate: number;
-    headOfHousehold: number;
+  standardDeduction?: number;
+  socialSecurity?: {
+    rate: number;
+    cap?: number;
   };
+  medicare?: {
+    rate: number;
+    additionalRate?: number;
+    additionalThreshold?: number;
+  };
+  filingStatuses?: string[];
 }
 
 const TaxCalculator = () => {
   const [income, setIncome] = useState<string>('');
+  const [country, setCountry] = useState<string>('USA');
   const [filingStatus, setFilingStatus] = useState<string>('single');
-  const [deductions, setDeductions] = useState<string>('');
-  const [useStandardDeduction, setUseStandardDeduction] = useState(true);
-  const [taxYear, setTaxYear] = useState<string>('2024');
   const [results, setResults] = useState<any>(null);
-  const { formatCurrency, selectedCurrency } = useCurrencyConverter();
+  const { formatCurrency, convertAmount, selectedCurrency } = useCurrencyConverter();
 
-  // 2024 Tax Brackets (updated for current year)
-  const taxData: { [key: string]: TaxData } = {
-    '2024': {
-      year: 2024,
+  // Top 10 countries tax data
+  const countryTaxData: { [key: string]: CountryTaxData } = {
+    'USA': {
+      name: 'United States',
+      currency: 'USD',
       brackets: [
         { min: 0, max: 11000, rate: 0.10 },
         { min: 11001, max: 44725, rate: 0.12 },
@@ -48,50 +53,148 @@ const TaxCalculator = () => {
         { min: 231251, max: 578125, rate: 0.35 },
         { min: 578126, max: Infinity, rate: 0.37 }
       ],
-      standardDeduction: {
-        single: 13850,
-        marriedJoint: 27700,
-        marriedSeparate: 13850,
-        headOfHousehold: 20800
-      }
+      standardDeduction: 13850,
+      socialSecurity: { rate: 0.062, cap: 160200 },
+      medicare: { rate: 0.0145, additionalRate: 0.009, additionalThreshold: 200000 },
+      filingStatuses: ['single', 'marriedJoint', 'marriedSeparate', 'headOfHousehold']
     },
-    '2025': {
-      year: 2025,
+    'UK': {
+      name: 'United Kingdom',
+      currency: 'GBP',
       brackets: [
-        { min: 0, max: 11250, rate: 0.10 },
-        { min: 11251, max: 45750, rate: 0.12 },
-        { min: 45751, max: 97650, rate: 0.22 },
-        { min: 97651, max: 186350, rate: 0.24 },
-        { min: 186351, max: 236750, rate: 0.32 },
-        { min: 236751, max: 591450, rate: 0.35 },
-        { min: 591451, max: Infinity, rate: 0.37 }
+        { min: 0, max: 12570, rate: 0.00 },      // Personal allowance
+        { min: 12571, max: 50270, rate: 0.20 },  // Basic rate
+        { min: 50271, max: 125140, rate: 0.40 }, // Higher rate
+        { min: 125141, max: Infinity, rate: 0.45 } // Additional rate
       ],
-      standardDeduction: {
-        single: 14200,
-        marriedJoint: 28400,
-        marriedSeparate: 14200,
-        headOfHousehold: 21300
-      }
+      socialSecurity: { rate: 0.12, cap: 50270 }, // National Insurance
+      filingStatuses: ['individual']
+    },
+    'Germany': {
+      name: 'Germany',
+      currency: 'EUR',
+      brackets: [
+        { min: 0, max: 10908, rate: 0.00 },
+        { min: 10909, max: 62809, rate: 0.14 }, // Progressive from 14% to 42%
+        { min: 62810, max: 277825, rate: 0.42 },
+        { min: 277826, max: Infinity, rate: 0.45 }
+      ],
+      socialSecurity: { rate: 0.195 }, // Combined social contributions
+      filingStatuses: ['single', 'married']
+    },
+    'Canada': {
+      name: 'Canada',
+      currency: 'CAD',
+      brackets: [
+        { min: 0, max: 53359, rate: 0.15 },
+        { min: 53360, max: 106717, rate: 0.205 },
+        { min: 106718, max: 165430, rate: 0.26 },
+        { min: 165431, max: 235675, rate: 0.29 },
+        { min: 235676, max: Infinity, rate: 0.33 }
+      ],
+      socialSecurity: { rate: 0.0595, cap: 68500 }, // CPP + EI
+      filingStatuses: ['single', 'married']
+    },
+    'Australia': {
+      name: 'Australia',
+      currency: 'AUD',
+      brackets: [
+        { min: 0, max: 18200, rate: 0.00 },
+        { min: 18201, max: 45000, rate: 0.19 },
+        { min: 45001, max: 120000, rate: 0.325 },
+        { min: 120001, max: 180000, rate: 0.37 },
+        { min: 180001, max: Infinity, rate: 0.45 }
+      ],
+      medicare: { rate: 0.02 }, // Medicare levy
+      filingStatuses: ['individual']
+    },
+    'France': {
+      name: 'France',
+      currency: 'EUR',
+      brackets: [
+        { min: 0, max: 10777, rate: 0.00 },
+        { min: 10778, max: 27478, rate: 0.11 },
+        { min: 27479, max: 78570, rate: 0.30 },
+        { min: 78571, max: 168994, rate: 0.41 },
+        { min: 168995, max: Infinity, rate: 0.45 }
+      ],
+      socialSecurity: { rate: 0.175 }, // Social contributions
+      filingStatuses: ['single', 'married']
+    },
+    'Japan': {
+      name: 'Japan',
+      currency: 'JPY',
+      brackets: [
+        { min: 0, max: 1950000, rate: 0.05 },
+        { min: 1950001, max: 3300000, rate: 0.10 },
+        { min: 3300001, max: 6950000, rate: 0.20 },
+        { min: 6950001, max: 9000000, rate: 0.23 },
+        { min: 9000001, max: 18000000, rate: 0.33 },
+        { min: 18000001, max: 40000000, rate: 0.40 },
+        { min: 40000001, max: Infinity, rate: 0.45 }
+      ],
+      socialSecurity: { rate: 0.1525 }, // Social insurance
+      filingStatuses: ['individual']
+    },
+    'Sweden': {
+      name: 'Sweden',
+      currency: 'SEK',
+      brackets: [
+        { min: 0, max: 540700, rate: 0.00 }, // Basic allowance
+        { min: 540701, max: 685800, rate: 0.20 },
+        { min: 685801, max: Infinity, rate: 0.25 }
+      ],
+      socialSecurity: { rate: 0.07 }, // Pension contribution
+      filingStatuses: ['individual']
+    },
+    'Switzerland': {
+      name: 'Switzerland',
+      currency: 'CHF',
+      brackets: [
+        { min: 0, max: 14500, rate: 0.00 },
+        { min: 14501, max: 31600, rate: 0.077 },
+        { min: 31601, max: 41400, rate: 0.088 },
+        { min: 41401, max: 55200, rate: 0.099 },
+        { min: 55201, max: 72500, rate: 0.11 },
+        { min: 72501, max: 78100, rate: 0.121 },
+        { min: 78101, max: Infinity, rate: 0.1155 }
+      ],
+      socialSecurity: { rate: 0.106 }, // AHV/IV/EO + ALV
+      filingStatuses: ['single', 'married']
+    },
+    'India': {
+      name: 'India',
+      currency: 'INR',
+      brackets: [
+        { min: 0, max: 300000, rate: 0.00 },
+        { min: 300001, max: 700000, rate: 0.05 },
+        { min: 700001, max: 1000000, rate: 0.10 },
+        { min: 1000001, max: 1200000, rate: 0.15 },
+        { min: 1200001, max: 1500000, rate: 0.20 },
+        { min: 1500001, max: Infinity, rate: 0.30 }
+      ],
+      filingStatuses: ['individual']
     }
   };
 
   const calculateTax = () => {
     const grossIncome = parseFloat(income) || 0;
-    const currentTaxData = taxData[taxYear];
+    const currentCountryData = countryTaxData[country];
     
-    // Determine deduction amount
-    const standardDed = currentTaxData.standardDeduction[filingStatus as keyof typeof currentTaxData.standardDeduction];
-    const deductionAmount = useStandardDeduction ? standardDed : (parseFloat(deductions) || 0);
-    
-    // Calculate taxable income
-    const taxableIncome = Math.max(0, grossIncome - deductionAmount);
+    if (!currentCountryData || grossIncome <= 0) {
+      setResults(null);
+      return;
+    }
+
+    // Convert income to country's local currency for calculation
+    const localIncome = convertAmount(grossIncome, selectedCurrency, currentCountryData.currency);
     
     // Calculate tax using brackets
     let totalTax = 0;
-    let remainingIncome = taxableIncome;
+    let remainingIncome = localIncome;
     const bracketDetails = [];
     
-    for (const bracket of currentTaxData.brackets) {
+    for (const bracket of currentCountryData.brackets) {
       if (remainingIncome <= 0) break;
       
       const taxableAtThisBracket = Math.min(remainingIncome, bracket.max - bracket.min + 1);
@@ -102,7 +205,7 @@ const TaxCalculator = () => {
           rate: bracket.rate * 100,
           income: taxableAtThisBracket,
           tax: taxAtThisBracket,
-          range: `$${bracket.min.toLocaleString()} - ${bracket.max === Infinity ? '∞' : '$' + bracket.max.toLocaleString()}`
+          range: `${bracket.min.toLocaleString()} - ${bracket.max === Infinity ? '∞' : bracket.max.toLocaleString()} ${currentCountryData.currency}`
         });
         
         totalTax += taxAtThisBracket;
@@ -110,24 +213,35 @@ const TaxCalculator = () => {
       }
     }
     
-    // Calculate additional taxes and take-home
-    const socialSecurityTax = Math.min(grossIncome * 0.062, 9932.40); // 2024 limit
-    const medicareTax = grossIncome * 0.0145;
-    const additionalMedicareTax = grossIncome > 200000 ? (grossIncome - 200000) * 0.009 : 0;
+    // Calculate social security and other contributions
+    let socialSecurityTax = 0;
+    let medicareTax = 0;
+    let additionalMedicareTax = 0;
     
-    const totalFederalTax = totalTax;
+    if (currentCountryData.socialSecurity) {
+      const cap = currentCountryData.socialSecurity.cap || Infinity;
+      socialSecurityTax = Math.min(localIncome, cap) * currentCountryData.socialSecurity.rate;
+    }
+    
+    if (currentCountryData.medicare) {
+      medicareTax = localIncome * currentCountryData.medicare.rate;
+      if (currentCountryData.medicare.additionalRate && currentCountryData.medicare.additionalThreshold) {
+        if (localIncome > currentCountryData.medicare.additionalThreshold) {
+          additionalMedicareTax = (localIncome - currentCountryData.medicare.additionalThreshold) * currentCountryData.medicare.additionalRate;
+        }
+      }
+    }
+    
     const totalPayrollTax = socialSecurityTax + medicareTax + additionalMedicareTax;
-    const totalTaxes = totalFederalTax + totalPayrollTax;
-    const takeHome = grossIncome - totalTaxes;
+    const totalTaxes = totalTax + totalPayrollTax;
+    const takeHome = localIncome - totalTaxes;
     
-    const effectiveRate = grossIncome > 0 ? (totalFederalTax / grossIncome) * 100 : 0;
-    const marginalRate = currentTaxData.brackets.find(b => taxableIncome >= b.min && taxableIncome <= b.max)?.rate * 100 || 0;
+    const effectiveRate = localIncome > 0 ? (totalTax / localIncome) * 100 : 0;
+    const marginalRate = currentCountryData.brackets.find(b => localIncome >= b.min && localIncome <= b.max)?.rate * 100 || 0;
     
     setResults({
-      grossIncome,
-      taxableIncome,
-      deductionAmount,
-      totalFederalTax,
+      grossIncome: localIncome,
+      totalIncomeTax: totalTax,
       socialSecurityTax,
       medicareTax,
       additionalMedicareTax,
@@ -137,7 +251,8 @@ const TaxCalculator = () => {
       effectiveRate,
       marginalRate,
       bracketDetails,
-      taxYear
+      country: currentCountryData.name,
+      currency: currentCountryData.currency
     });
   };
 
@@ -145,32 +260,26 @@ const TaxCalculator = () => {
     if (income) {
       calculateTax();
     }
-  }, [income, filingStatus, deductions, useStandardDeduction, taxYear]);
+  }, [income, country, selectedCurrency]);
 
   const exportResults = () => {
     if (!results) return;
     
     const reportData = `
-Tax Calculation Report - ${results.taxYear}
+Tax Calculation Report - ${results.country}
 =====================================
-Gross Income: ${formatCurrency(results.grossIncome)}
-Deductions: ${formatCurrency(results.deductionAmount)}
-Taxable Income: ${formatCurrency(results.taxableIncome)}
-
-Federal Income Tax: ${formatCurrency(results.totalFederalTax)}
-Social Security Tax: ${formatCurrency(results.socialSecurityTax)}
-Medicare Tax: ${formatCurrency(results.medicareTax)}
-Additional Medicare Tax: ${formatCurrency(results.additionalMedicareTax)}
-
-Total Taxes: ${formatCurrency(results.totalTaxes)}
-Take-Home Pay: ${formatCurrency(results.takeHome)}
+Gross Income: ${results.grossIncome.toLocaleString()} ${results.currency}
+Income Tax: ${results.totalIncomeTax.toLocaleString()} ${results.currency}
+Social Contributions: ${results.totalPayrollTax.toLocaleString()} ${results.currency}
+Total Taxes: ${results.totalTaxes.toLocaleString()} ${results.currency}
+Take-Home Pay: ${results.takeHome.toLocaleString()} ${results.currency}
 
 Effective Tax Rate: ${results.effectiveRate.toFixed(2)}%
 Marginal Tax Rate: ${results.marginalRate.toFixed(2)}%
 
 Tax Bracket Breakdown:
 ${results.bracketDetails.map((b: any) => 
-  `${b.rate}% bracket (${b.range}): ${formatCurrency(b.tax)} on ${formatCurrency(b.income)}`
+  `${b.rate}% bracket (${b.range}): ${b.tax.toLocaleString()} ${results.currency} on ${b.income.toLocaleString()} ${results.currency}`
 ).join('\n')}
     `;
     
@@ -178,10 +287,12 @@ ${results.bracketDetails.map((b: any) =>
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `tax-calculation-${results.taxYear}.txt`;
+    a.download = `tax-calculation-${results.country.toLowerCase()}.txt`;
     a.click();
     URL.revokeObjectURL(url);
   };
+
+  const currentCountryData = countryTaxData[country];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-blue-100 to-white dark:from-gray-950 dark:via-gray-900 dark:to-slate-950">
@@ -189,7 +300,7 @@ ${results.bracketDetails.map((b: any) =>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <Calculator className="h-8 w-8 text-indigo-600" />
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Tax Calculator</h1>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Global Tax Calculator</h1>
           </div>
           <div className="flex items-center space-x-4">
             <ThemeToggle />
@@ -207,25 +318,31 @@ ${results.bracketDetails.map((b: any) =>
           <div className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Tax Information</CardTitle>
-                <CardDescription>Enter your income and filing details</CardDescription>
+                <CardTitle className="flex items-center gap-2">
+                  <Globe className="h-5 w-5" />
+                  Tax Information
+                </CardTitle>
+                <CardDescription>Select country and enter your income details</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label htmlFor="taxYear">Tax Year</Label>
-                  <Select value={taxYear} onValueChange={setTaxYear}>
+                  <Label htmlFor="country">Country</Label>
+                  <Select value={country} onValueChange={setCountry}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="2024">2024</SelectItem>
-                      <SelectItem value="2025">2025</SelectItem>
+                      {Object.entries(countryTaxData).map(([code, data]) => (
+                        <SelectItem key={code} value={code}>
+                          {data.name} ({data.currency})
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div>
-                  <Label htmlFor="income">Annual Gross Income</Label>
+                  <Label htmlFor="income">Annual Gross Income ({selectedCurrency})</Label>
                   <Input
                     id="income"
                     type="number"
@@ -235,45 +352,28 @@ ${results.bracketDetails.map((b: any) =>
                   />
                 </div>
 
-                <div>
-                  <Label htmlFor="filingStatus">Filing Status</Label>
-                  <Select value={filingStatus} onValueChange={setFilingStatus}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="single">Single</SelectItem>
-                      <SelectItem value="marriedJoint">Married Filing Jointly</SelectItem>
-                      <SelectItem value="marriedSeparate">Married Filing Separately</SelectItem>
-                      <SelectItem value="headOfHousehold">Head of Household</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      id="standardDeduction"
-                      checked={useStandardDeduction}
-                      onChange={(e) => setUseStandardDeduction(e.target.checked)}
-                    />
-                    <Label htmlFor="standardDeduction">Use Standard Deduction</Label>
+                {currentCountryData?.filingStatuses && currentCountryData.filingStatuses.length > 1 && (
+                  <div>
+                    <Label htmlFor="filingStatus">Filing Status</Label>
+                    <Select value={filingStatus} onValueChange={setFilingStatus}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {currentCountryData.filingStatuses.map((status) => (
+                          <SelectItem key={status} value={status}>
+                            {status === 'single' ? 'Single' : 
+                             status === 'married' ? 'Married' :
+                             status === 'marriedJoint' ? 'Married Filing Jointly' :
+                             status === 'marriedSeparate' ? 'Married Filing Separately' :
+                             status === 'headOfHousehold' ? 'Head of Household' :
+                             status === 'individual' ? 'Individual' : status}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
-                  
-                  {!useStandardDeduction && (
-                    <div>
-                      <Label htmlFor="deductions">Itemized Deductions</Label>
-                      <Input
-                        id="deductions"
-                        type="number"
-                        placeholder="15000"
-                        value={deductions}
-                        onChange={(e) => setDeductions(e.target.value)}
-                      />
-                    </div>
-                  )}
-                </div>
+                )}
 
                 <Button onClick={calculateTax} className="w-full">
                   <RefreshCw className="h-4 w-4 mr-2" />
@@ -290,13 +390,13 @@ ${results.bracketDetails.map((b: any) =>
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center justify-between">
-                      Tax Calculation Results
+                      Tax Calculation Results - {results.country}
                       <Button variant="outline" size="sm" onClick={exportResults}>
                         <Download className="h-4 w-4 mr-2" />
                         Export
                       </Button>
                     </CardTitle>
-                    <CardDescription>Based on {results.taxYear} tax brackets</CardDescription>
+                    <CardDescription>Calculated in {results.currency}</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
@@ -313,50 +413,26 @@ ${results.bracketDetails.map((b: any) =>
                     <div className="space-y-3">
                       <div className="flex justify-between">
                         <span>Gross Income:</span>
-                        <span className="font-semibold">{formatCurrency(results.grossIncome)}</span>
+                        <span className="font-semibold">{results.grossIncome.toLocaleString()} {results.currency}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span>Deductions:</span>
-                        <span className="text-green-600">-{formatCurrency(results.deductionAmount)}</span>
+                        <span>Income Tax:</span>
+                        <span className="text-red-600">{results.totalIncomeTax.toLocaleString()} {results.currency}</span>
                       </div>
-                      <div className="flex justify-between border-t pt-2">
-                        <span>Taxable Income:</span>
-                        <span className="font-semibold">{formatCurrency(results.taxableIncome)}</span>
+                      {results.totalPayrollTax > 0 && (
+                        <div className="flex justify-between">
+                          <span>Social Contributions:</span>
+                          <span className="text-red-600">{results.totalPayrollTax.toLocaleString()} {results.currency}</span>
+                        </div>
+                      )}
+                      <div className="border-t pt-2 flex justify-between font-semibold">
+                        <span>Total Taxes:</span>
+                        <span className="text-red-600">{results.totalTaxes.toLocaleString()} {results.currency}</span>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Tax Breakdown</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div className="flex justify-between">
-                      <span>Federal Income Tax:</span>
-                      <span className="text-red-600">{formatCurrency(results.totalFederalTax)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Social Security (6.2%):</span>
-                      <span className="text-red-600">{formatCurrency(results.socialSecurityTax)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Medicare (1.45%):</span>
-                      <span className="text-red-600">{formatCurrency(results.medicareTax)}</span>
-                    </div>
-                    {results.additionalMedicareTax > 0 && (
-                      <div className="flex justify-between">
-                        <span>Additional Medicare (0.9%):</span>
-                        <span className="text-red-600">{formatCurrency(results.additionalMedicareTax)}</span>
+                      <div className="flex justify-between font-bold text-lg">
+                        <span>Take-Home Pay:</span>
+                        <span className="text-green-600">{results.takeHome.toLocaleString()} {results.currency}</span>
                       </div>
-                    )}
-                    <div className="border-t pt-2 flex justify-between font-semibold">
-                      <span>Total Taxes:</span>
-                      <span className="text-red-600">{formatCurrency(results.totalTaxes)}</span>
-                    </div>
-                    <div className="flex justify-between font-bold text-lg">
-                      <span>Take-Home Pay:</span>
-                      <span className="text-green-600">{formatCurrency(results.takeHome)}</span>
                     </div>
                   </CardContent>
                 </Card>
@@ -375,8 +451,8 @@ ${results.bracketDetails.map((b: any) =>
                               <p className="text-sm text-gray-600 dark:text-gray-400">{bracket.range}</p>
                             </div>
                             <div className="text-right">
-                              <p className="font-semibold">{formatCurrency(bracket.tax)}</p>
-                              <p className="text-sm text-gray-600 dark:text-gray-400">on {formatCurrency(bracket.income)}</p>
+                              <p className="font-semibold">{bracket.tax.toLocaleString()} {results.currency}</p>
+                              <p className="text-sm text-gray-600 dark:text-gray-400">on {bracket.income.toLocaleString()}</p>
                             </div>
                           </div>
                         ))}
