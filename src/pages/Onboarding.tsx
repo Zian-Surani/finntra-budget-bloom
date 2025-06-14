@@ -3,19 +3,40 @@ import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
-import { Building2, DollarSign, Target, CheckCircle, Plus } from 'lucide-react';
+import { Building2, DollarSign, Target, CheckCircle, Plus, User, Phone, MapPin, Briefcase } from 'lucide-react';
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { useAppContext } from '@/contexts/AppContext';
 
 const Onboarding = () => {
+  const { updateUserData, updateBankData, updateSavingsData } = useAppContext();
   const [currentStep, setCurrentStep] = useState(1);
-  const [bankData, setBankData] = useState({ name: '', type: '', balance: '' });
-  const [savingsData, setSavingsData] = useState({ amount: '', goal: '', target: '' });
+  const [userData, setUserData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    address: '',
+    occupation: '',
+    income: ''
+  });
+  const [bankData, setBankData] = useState({
+    name: '',
+    type: '',
+    balance: '',
+    accountNumber: '',
+    routingNumber: ''
+  });
+  const [savingsData, setSavingsData] = useState({
+    amount: '',
+    goal: '',
+    target: ''
+  });
   const [customBank, setCustomBank] = useState('');
   const [showCustomBank, setShowCustomBank] = useState(false);
 
-  const totalSteps = 4;
+  const totalSteps = 6;
   const progress = (currentStep / totalSteps) * 100;
 
   const banks = [
@@ -23,12 +44,35 @@ const Onboarding = () => {
     'American Express', 'TD Bank', 'PNC Bank', 'HSBC', 'Other'
   ];
 
+  const accountTypes = [
+    'Checking Account',
+    'Savings Account',
+    'Money Market Account',
+    'Certificate of Deposit (CD)',
+    'Credit Card'
+  ];
+
+  const occupations = [
+    'Software Engineer', 'Teacher', 'Doctor', 'Lawyer', 'Engineer',
+    'Marketing Specialist', 'Sales Representative', 'Consultant',
+    'Student', 'Retired', 'Entrepreneur', 'Other'
+  ];
+
   const handleBankSelect = (value: string) => {
     if (value === 'Other') {
       setShowCustomBank(true);
+      setBankData({ ...bankData, name: '' });
     } else {
       setBankData({ ...bankData, name: value });
       setShowCustomBank(false);
+    }
+  };
+
+  const handleAddCustomBank = () => {
+    if (customBank.trim()) {
+      setBankData({ ...bankData, name: customBank });
+      setShowCustomBank(false);
+      setCustomBank('');
     }
   };
 
@@ -36,11 +80,31 @@ const Onboarding = () => {
     if (currentStep < totalSteps) {
       setCurrentStep(currentStep + 1);
     } else {
-      // Save onboarding data and redirect to dashboard
+      // Save all data and redirect to dashboard
+      updateUserData(userData);
+      updateBankData(bankData);
+      updateSavingsData(savingsData);
       localStorage.setItem('onboardingComplete', 'true');
-      localStorage.setItem('userBankData', JSON.stringify(bankData));
-      localStorage.setItem('userSavingsData', JSON.stringify(savingsData));
       window.location.href = '/dashboard';
+    }
+  };
+
+  const isStepValid = () => {
+    switch (currentStep) {
+      case 1:
+        return userData.name && userData.email;
+      case 2:
+        return userData.phone && userData.address;
+      case 3:
+        return userData.occupation && userData.income;
+      case 4:
+        return bankData.name && bankData.type;
+      case 5:
+        return bankData.balance && bankData.accountNumber;
+      case 6:
+        return savingsData.amount && savingsData.goal && savingsData.target;
+      default:
+        return false;
     }
   };
 
@@ -50,50 +114,32 @@ const Onboarding = () => {
         return (
           <Card className="w-full max-w-md mx-auto">
             <CardHeader className="text-center">
-              <Building2 className="h-12 w-12 mx-auto mb-4 text-blue-600" />
-              <CardTitle>Connect Your Bank</CardTitle>
-              <CardDescription>Select your primary bank to get started</CardDescription>
+              <User className="h-12 w-12 mx-auto mb-4 text-blue-600" />
+              <CardTitle>Personal Information</CardTitle>
+              <CardDescription>Let's start with your basic details</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <Select onValueChange={handleBankSelect}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select your bank" />
-                </SelectTrigger>
-                <SelectContent>
-                  {banks.map((bank) => (
-                    <SelectItem key={bank} value={bank}>{bank}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              
-              {showCustomBank && (
-                <div className="space-y-2">
-                  <Input
-                    placeholder="Enter your bank name"
-                    value={customBank}
-                    onChange={(e) => setCustomBank(e.target.value)}
-                  />
-                  <Button 
-                    onClick={() => setBankData({ ...bankData, name: customBank })}
-                    className="w-full"
-                    variant="outline"
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Custom Bank
-                  </Button>
-                </div>
-              )}
-              
-              <Select onValueChange={(value) => setBankData({ ...bankData, type: value })}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Account type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="checking">Checking Account</SelectItem>
-                  <SelectItem value="savings">Savings Account</SelectItem>
-                  <SelectItem value="credit">Credit Card</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="space-y-2">
+                <Label htmlFor="fullName">Full Name *</Label>
+                <Input
+                  id="fullName"
+                  placeholder="Enter your full name"
+                  value={userData.name}
+                  onChange={(e) => setUserData({ ...userData, name: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email">Email Address *</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="Enter your email"
+                  value={userData.email}
+                  onChange={(e) => setUserData({ ...userData, email: e.target.value })}
+                  required
+                />
+              </div>
             </CardContent>
           </Card>
         );
@@ -102,17 +148,32 @@ const Onboarding = () => {
         return (
           <Card className="w-full max-w-md mx-auto">
             <CardHeader className="text-center">
-              <DollarSign className="h-12 w-12 mx-auto mb-4 text-green-600" />
-              <CardTitle>Current Balance</CardTitle>
-              <CardDescription>Enter your current account balance</CardDescription>
+              <Phone className="h-12 w-12 mx-auto mb-4 text-green-600" />
+              <CardTitle>Contact Information</CardTitle>
+              <CardDescription>How can we reach you?</CardDescription>
             </CardHeader>
-            <CardContent>
-              <Input
-                type="number"
-                placeholder="Enter balance amount"
-                value={bankData.balance}
-                onChange={(e) => setBankData({ ...bankData, balance: e.target.value })}
-              />
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="phone">Phone Number *</Label>
+                <Input
+                  id="phone"
+                  type="tel"
+                  placeholder="Enter your phone number"
+                  value={userData.phone}
+                  onChange={(e) => setUserData({ ...userData, phone: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="address">Address *</Label>
+                <Input
+                  id="address"
+                  placeholder="Enter your address"
+                  value={userData.address}
+                  onChange={(e) => setUserData({ ...userData, address: e.target.value })}
+                  required
+                />
+              </div>
             </CardContent>
           </Card>
         );
@@ -121,28 +182,35 @@ const Onboarding = () => {
         return (
           <Card className="w-full max-w-md mx-auto">
             <CardHeader className="text-center">
-              <Target className="h-12 w-12 mx-auto mb-4 text-purple-600" />
-              <CardTitle>Savings Goals</CardTitle>
-              <CardDescription>Set up your financial goals</CardDescription>
+              <Briefcase className="h-12 w-12 mx-auto mb-4 text-purple-600" />
+              <CardTitle>Professional Information</CardTitle>
+              <CardDescription>Tell us about your work</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <Input
-                type="number"
-                placeholder="Current savings amount"
-                value={savingsData.amount}
-                onChange={(e) => setSavingsData({ ...savingsData, amount: e.target.value })}
-              />
-              <Input
-                placeholder="Savings goal (e.g., Emergency Fund)"
-                value={savingsData.goal}
-                onChange={(e) => setSavingsData({ ...savingsData, goal: e.target.value })}
-              />
-              <Input
-                type="number"
-                placeholder="Target amount"
-                value={savingsData.target}
-                onChange={(e) => setSavingsData({ ...savingsData, target: e.target.value })}
-              />
+              <div className="space-y-2">
+                <Label htmlFor="occupation">Occupation *</Label>
+                <Select onValueChange={(value) => setUserData({ ...userData, occupation: value })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select your occupation" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {occupations.map((occupation) => (
+                      <SelectItem key={occupation} value={occupation}>{occupation}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="income">Monthly Income *</Label>
+                <Input
+                  id="income"
+                  type="number"
+                  placeholder="Enter your monthly income"
+                  value={userData.income}
+                  onChange={(e) => setUserData({ ...userData, income: e.target.value })}
+                  required
+                />
+              </div>
             </CardContent>
           </Card>
         );
@@ -151,17 +219,141 @@ const Onboarding = () => {
         return (
           <Card className="w-full max-w-md mx-auto">
             <CardHeader className="text-center">
-              <CheckCircle className="h-12 w-12 mx-auto mb-4 text-green-600" />
-              <CardTitle>All Set!</CardTitle>
-              <CardDescription>Your financial dashboard is ready</CardDescription>
+              <Building2 className="h-12 w-12 mx-auto mb-4 text-blue-600" />
+              <CardTitle>Connect Your Bank</CardTitle>
+              <CardDescription>Select your primary bank to get started</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
-                <h4 className="font-semibold mb-2">Your Setup:</h4>
-                <p><strong>Bank:</strong> {bankData.name}</p>
-                <p><strong>Account:</strong> {bankData.type}</p>
-                <p><strong>Balance:</strong> ${bankData.balance}</p>
-                <p><strong>Savings Goal:</strong> {savingsData.goal}</p>
+              <div className="space-y-2">
+                <Label>Bank Name *</Label>
+                <Select onValueChange={handleBankSelect}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select your bank" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {banks.map((bank) => (
+                      <SelectItem key={bank} value={bank}>{bank}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              {showCustomBank && (
+                <div className="space-y-2">
+                  <Label>Custom Bank Name</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Enter your bank name"
+                      value={customBank}
+                      onChange={(e) => setCustomBank(e.target.value)}
+                    />
+                    <Button onClick={handleAddCustomBank} variant="outline">
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+              
+              <div className="space-y-2">
+                <Label>Account Type *</Label>
+                <Select onValueChange={(value) => setBankData({ ...bankData, type: value })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select account type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {accountTypes.map((type) => (
+                      <SelectItem key={type} value={type}>{type}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardContent>
+          </Card>
+        );
+
+      case 5:
+        return (
+          <Card className="w-full max-w-md mx-auto">
+            <CardHeader className="text-center">
+              <DollarSign className="h-12 w-12 mx-auto mb-4 text-green-600" />
+              <CardTitle>Account Details</CardTitle>
+              <CardDescription>Enter your account information</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="balance">Current Balance *</Label>
+                <Input
+                  id="balance"
+                  type="number"
+                  placeholder="Enter current balance"
+                  value={bankData.balance}
+                  onChange={(e) => setBankData({ ...bankData, balance: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="accountNumber">Account Number *</Label>
+                <Input
+                  id="accountNumber"
+                  placeholder="Enter account number"
+                  value={bankData.accountNumber}
+                  onChange={(e) => setBankData({ ...bankData, accountNumber: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="routingNumber">Routing Number (Optional)</Label>
+                <Input
+                  id="routingNumber"
+                  placeholder="Enter routing number"
+                  value={bankData.routingNumber}
+                  onChange={(e) => setBankData({ ...bankData, routingNumber: e.target.value })}
+                />
+              </div>
+            </CardContent>
+          </Card>
+        );
+
+      case 6:
+        return (
+          <Card className="w-full max-w-md mx-auto">
+            <CardHeader className="text-center">
+              <Target className="h-12 w-12 mx-auto mb-4 text-purple-600" />
+              <CardTitle>Savings Goals</CardTitle>
+              <CardDescription>Set up your financial goals</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="currentSavings">Current Savings Amount *</Label>
+                <Input
+                  id="currentSavings"
+                  type="number"
+                  placeholder="Enter current savings"
+                  value={savingsData.amount}
+                  onChange={(e) => setSavingsData({ ...savingsData, amount: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="savingsGoal">Savings Goal *</Label>
+                <Input
+                  id="savingsGoal"
+                  placeholder="e.g., Emergency Fund, Vacation, Car"
+                  value={savingsData.goal}
+                  onChange={(e) => setSavingsData({ ...savingsData, goal: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="targetAmount">Target Amount *</Label>
+                <Input
+                  id="targetAmount"
+                  type="number"
+                  placeholder="Enter target amount"
+                  value={savingsData.target}
+                  onChange={(e) => setSavingsData({ ...savingsData, target: e.target.value })}
+                  required
+                />
               </div>
             </CardContent>
           </Card>
@@ -202,11 +394,7 @@ const Onboarding = () => {
         <div className="flex justify-center mt-8">
           <Button 
             onClick={handleNextStep}
-            disabled={
-              (currentStep === 1 && !bankData.name) ||
-              (currentStep === 2 && !bankData.balance) ||
-              (currentStep === 3 && (!savingsData.amount || !savingsData.goal))
-            }
+            disabled={!isStepValid()}
             className="px-8 py-3"
           >
             {currentStep === totalSteps ? 'Complete Setup' : 'Continue'}

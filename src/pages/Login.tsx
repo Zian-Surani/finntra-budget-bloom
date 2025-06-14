@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -30,6 +30,38 @@ const Login = () => {
   });
   const [activeTab, setActiveTab] = useState("login");
   const [rippleStyle, setRippleStyle] = useState<any>(null);
+  const [captchaQuestion, setCaptchaQuestion] = useState("");
+  const [captchaAnswer, setCaptchaAnswer] = useState("");
+
+  // Generate random captcha on component mount and tab change
+  useEffect(() => {
+    generateCaptcha();
+  }, [activeTab]);
+
+  const generateCaptcha = () => {
+    const num1 = Math.floor(Math.random() * 10) + 1;
+    const num2 = Math.floor(Math.random() * 10) + 1;
+    const operators = ['+', '-', '*'];
+    const operator = operators[Math.floor(Math.random() * operators.length)];
+    
+    let answer;
+    switch (operator) {
+      case '+':
+        answer = num1 + num2;
+        break;
+      case '-':
+        answer = num1 - num2;
+        break;
+      case '*':
+        answer = num1 * num2;
+        break;
+      default:
+        answer = num1 + num2;
+    }
+    
+    setCaptchaQuestion(`What is ${num1} ${operator} ${num2}?`);
+    setCaptchaAnswer(answer.toString());
+  };
 
   const handleLogoClick = () => {
     window.location.href = "/";
@@ -62,14 +94,22 @@ const Login = () => {
 
   const handleSignup = (e: React.FormEvent) => {
     e.preventDefault();
-    if (signupData.captcha !== "8") {
+    if (signupData.captcha !== captchaAnswer) {
       alert("Please solve the captcha correctly");
+      generateCaptcha(); // Generate new captcha on wrong answer
+      setSignupData({ ...signupData, captcha: "" });
       return;
     }
     if (signupData.password !== signupData.confirmPassword) {
       alert("Passwords do not match");
       return;
     }
+    // Clear onboarding flag to ensure new user goes through complete setup
+    localStorage.removeItem('onboardingComplete');
+    localStorage.removeItem('userData');
+    localStorage.removeItem('userBankData');
+    localStorage.removeItem('userSavingsData');
+    localStorage.removeItem('transactions');
     // Redirect to onboarding for new users
     window.location.href = "/onboarding";
   };
@@ -268,8 +308,17 @@ const Login = () => {
                     <Label htmlFor="signup-captcha" className="flex items-center gap-1">
                       <span>Captcha</span>
                       <span className="inline-block rounded px-2 py-0.5 text-xs text-indigo-700 bg-indigo-100 dark:bg-indigo-800 dark:text-indigo-300 ml-2">
-                        What is 3 + 5?
+                        {captchaQuestion}
                       </span>
+                      <Button 
+                        type="button" 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={generateCaptcha}
+                        className="ml-2 h-6 w-6 p-0 text-xs"
+                      >
+                        🔄
+                      </Button>
                     </Label>
                     <div className="relative">
                       <Input 
@@ -280,13 +329,11 @@ const Login = () => {
                         value={signupData.captcha}
                         onChange={e => setSignupData({ ...signupData, captcha: e.target.value })}
                         required 
-                        pattern="8" 
-                        title="Please solve the captcha question." 
                         autoComplete="off" 
                       />
                     </div>
                     <span className="text-xs text-muted-foreground block mt-0.5">
-                      Please solve the math to continue (demo only).
+                      Please solve the math question to continue.
                     </span>
                   </div>
                   <Button

@@ -1,5 +1,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
+import { useAppContext } from '@/contexts/AppContext';
 
 const exchangeRates: Record<string, number> = {
   'USD': 1,
@@ -10,18 +11,18 @@ const exchangeRates: Record<string, number> = {
 };
 
 export const useCurrencyConverter = () => {
-  const [selectedCurrency, setSelectedCurrency] = useState('USD');
+  const { state, setCurrency } = useAppContext();
   const [rates, setRates] = useState(exchangeRates);
 
-  const convertAmount = useCallback((amount: number, fromCurrency: string = 'USD', toCurrency: string = selectedCurrency): number => {
+  const convertAmount = useCallback((amount: number, fromCurrency: string = 'USD', toCurrency: string = state.currency): number => {
     if (fromCurrency === toCurrency) return amount;
     
     // Convert to USD first, then to target currency
     const usdAmount = amount / rates[fromCurrency];
     return usdAmount * rates[toCurrency];
-  }, [rates, selectedCurrency]);
+  }, [rates, state.currency]);
 
-  const formatCurrency = useCallback((amount: number, currency: string = selectedCurrency): string => {
+  const formatCurrency = useCallback((amount: number, currency: string = state.currency): string => {
     const symbols = {
       'USD': '$',
       'INR': '₹',
@@ -37,7 +38,11 @@ export const useCurrencyConverter = () => {
     });
     
     return `${symbols[currency as keyof typeof symbols]}${formattedNumber}`;
-  }, [convertAmount, selectedCurrency]);
+  }, [convertAmount, state.currency]);
+
+  const setSelectedCurrency = (currency: string) => {
+    setCurrency(currency);
+  };
 
   // Simulate real-time updates
   useEffect(() => {
@@ -58,7 +63,7 @@ export const useCurrencyConverter = () => {
     convertAmount, 
     formatCurrency, 
     rates, 
-    selectedCurrency, 
+    selectedCurrency: state.currency, 
     setSelectedCurrency 
   };
 };
