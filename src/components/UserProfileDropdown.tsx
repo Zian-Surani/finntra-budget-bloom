@@ -9,7 +9,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { User, CreditCard, Building2, PieChart, FileText, MessageCircle, LogOut, Settings } from 'lucide-react';
+import { CreditCard, Building2, PiggyBank, FileText, MessageCircle, LogOut, Settings } from 'lucide-react';
+import { AiChatModal } from '@/components/AiChatModal';
 
 export const UserProfileDropdown = () => {
   const [showChatbot, setShowChatbot] = useState(false);
@@ -43,13 +44,9 @@ export const UserProfileDropdown = () => {
             <Building2 className="mr-2 h-4 w-4" />
             <span>Accounts</span>
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => window.location.href = '/dashboard/user'}>
-            <User className="mr-2 h-4 w-4" />
-            <span>User Dashboard</span>
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => window.location.href = '/dashboard/user'}>
-            <PieChart className="mr-2 h-4 w-4" />
-            <span>Savings</span>
+          <DropdownMenuItem onClick={() => window.location.href = '/savings'}>
+            <PiggyBank className="mr-2 h-4 w-4" />
+            <span>Smart Savings</span>
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => window.location.href = '/expense-report'}>
             <FileText className="mr-2 h-4 w-4" />
@@ -73,23 +70,7 @@ export const UserProfileDropdown = () => {
       </DropdownMenu>
 
       {showChatbot && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
-          <div className="bg-white dark:bg-gray-900 rounded-lg p-6 max-w-md w-full mx-4">
-            <h3 className="text-lg font-semibold mb-4">Income Management Assistant</h3>
-            <div className="space-y-3 text-sm">
-              <p>💡 <strong>Tip:</strong> Set up automatic savings transfers for 20% of your income.</p>
-              <p>📊 <strong>Budget Rule:</strong> Follow the 50/30/20 rule - 50% needs, 30% wants, 20% savings.</p>
-              <p>🎯 <strong>Goal Setting:</strong> Create specific financial goals and track progress monthly.</p>
-              <p>📈 <strong>Investment:</strong> Consider diversifying with low-cost index funds.</p>
-            </div>
-            <Button 
-              onClick={() => setShowChatbot(false)}
-              className="w-full mt-4"
-            >
-              Got it, thanks!
-            </Button>
-          </div>
-        </div>
+        <AiChatModal onClose={() => setShowChatbot(false)} />
       )}
     </>
   );

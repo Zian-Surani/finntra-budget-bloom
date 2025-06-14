@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import {
   Card,
@@ -46,9 +45,19 @@ const Login = () => {
     setTimeout(() => setRippleStyle(null), 400);
   };
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    window.location.href = "/dashboard";
+  const handleLogin = () => {
+    console.log('Login attempt:', { email, password });
+    
+    // Check if user has completed onboarding
+    const onboardingComplete = localStorage.getItem('onboardingComplete');
+    
+    if (!onboardingComplete) {
+      // New user - redirect to onboarding
+      window.location.href = '/onboarding';
+    } else {
+      // Existing user - redirect to dashboard
+      window.location.href = '/dashboard';
+    }
   };
 
   const handleSignup = (e: React.FormEvent) => {

@@ -11,6 +11,8 @@ import { MessageLoading } from "@/components/ui/message-loading";
 const Landing = lazy(() => import("./pages/Landing"));
 const Login = lazy(() => import("./pages/Login"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Onboarding = lazy(() => import("./pages/Onboarding"));
+const Savings = lazy(() => import("./pages/Savings"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const DashboardUser = lazy(() => import("./pages/DashboardUser"));
 const DashboardAdmin = lazy(() => import("./pages/DashboardAdmin"));
@@ -43,7 +45,9 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Suspense fallback={<MessageLoading />}><Landing /></Suspense>} />
             <Route path="/login" element={<Suspense fallback={<MessageLoading />}><Login /></Suspense>} />
+            <Route path="/onboarding" element={<Suspense fallback={<MessageLoading />}><Onboarding /></Suspense>} />
             <Route path="/dashboard" element={<Suspense fallback={<MessageLoading />}><Dashboard /></Suspense>} />
+            <Route path="/savings" element={<Suspense fallback={<MessageLoading />}><Savings /></Suspense>} />
             <Route path="/dashboard/user" element={<Suspense fallback={<MessageLoading />}><DashboardUser /></Suspense>} />
             <Route path="/dashboard/admin" element={<Suspense fallback={<MessageLoading />}><DashboardAdmin /></Suspense>} />
             <Route path="/dashboard/developer" element={<Suspense fallback={<MessageLoading />}><DashboardDeveloper /></Suspense>} />

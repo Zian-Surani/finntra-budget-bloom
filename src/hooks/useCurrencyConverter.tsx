@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 const exchangeRates: Record<string, number> = {
   'USD': 1,
@@ -13,15 +13,15 @@ export const useCurrencyConverter = () => {
   const [selectedCurrency, setSelectedCurrency] = useState('USD');
   const [rates, setRates] = useState(exchangeRates);
 
-  const convertAmount = (amount: number, fromCurrency: string, toCurrency: string): number => {
+  const convertAmount = useCallback((amount: number, fromCurrency: string = 'USD', toCurrency: string = selectedCurrency): number => {
     if (fromCurrency === toCurrency) return amount;
     
     // Convert to USD first, then to target currency
     const usdAmount = amount / rates[fromCurrency];
     return usdAmount * rates[toCurrency];
-  };
+  }, [rates, selectedCurrency]);
 
-  const formatCurrency = (amount: number, currency: string = selectedCurrency): string => {
+  const formatCurrency = useCallback((amount: number, currency: string = selectedCurrency): string => {
     const symbols = {
       'USD': '$',
       'INR': '₹',
@@ -31,8 +31,13 @@ export const useCurrencyConverter = () => {
     };
     
     const convertedAmount = convertAmount(amount, 'USD', currency);
-    return `${symbols[currency as keyof typeof symbols]}${convertedAmount.toLocaleString()}`;
-  };
+    const formattedNumber = convertedAmount.toLocaleString('en-US', {
+      minimumFractionDigits: currency === 'JPY' ? 0 : 2,
+      maximumFractionDigits: currency === 'JPY' ? 0 : 2
+    });
+    
+    return `${symbols[currency as keyof typeof symbols]}${formattedNumber}`;
+  }, [convertAmount, selectedCurrency]);
 
   // Simulate real-time updates
   useEffect(() => {
