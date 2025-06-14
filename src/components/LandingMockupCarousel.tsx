@@ -29,7 +29,11 @@ const mockups = [
 
 const AUTO_SCROLL_INTERVAL = 2500; // ms
 
-const LandingMockupCarousel: React.FC = () => {
+interface CarouselProps {
+  onSlideChange?: (index: number) => void;
+}
+
+const LandingMockupCarousel: React.FC<CarouselProps> = ({ onSlideChange }) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const mockupCount = mockups.length;
@@ -37,12 +41,16 @@ const LandingMockupCarousel: React.FC = () => {
   useEffect(() => {
     if (intervalRef.current) clearInterval(intervalRef.current);
     intervalRef.current = setInterval(() => {
-      setActiveIndex((idx) => (idx + 1) % mockupCount);
+      setActiveIndex((idx) => {
+        const nextIdx = (idx + 1) % mockupCount;
+        if (onSlideChange) onSlideChange(nextIdx);
+        return nextIdx;
+      });
     }, AUTO_SCROLL_INTERVAL);
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [mockupCount]);
+  }, [mockupCount, onSlideChange]);
 
   return (
     <div className="w-full max-w-2xl mx-auto relative mt-6">
@@ -62,7 +70,7 @@ const LandingMockupCarousel: React.FC = () => {
                       : "scale(0.91) translateY(12px)",
                 }}
               >
-                <div className="bg-white/90 dark:bg-gray-900/90 rounded-2xl shadow-xl overflow-hidden p-2 flex justify-center items-center h-72 w-52 md:w-64 border border-muted animate-scale-in transition-all">
+                <div className="bg-white/90 dark:bg-gray-900/90 rounded-2xl shadow-xl overflow-hidden p-2 flex justify-center items-center h-72 w-52 md:w-64 border border-muted animate-scale-in transition-all hover:scale-105">
                   <img
                     src={mockup.img}
                     alt={mockup.alt}
@@ -89,6 +97,13 @@ const LandingMockupCarousel: React.FC = () => {
             }`}
           />
         ))}
+      </div>
+      {/* Animated "Scroll" hint */}
+      <div className="flex justify-center mt-2">
+        <span className="inline-flex items-center gap-1 px-3 py-1 bg-gradient-to-r from-gray-900 via-blue-900 to-indigo-900 text-white text-xs rounded-lg shadow animate-slide-in-right dark:bg-black/60">
+          <svg className="w-3 h-3 mr-1 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 17l4 4 4-4m-4-5v9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          Auto-scroll enabled!
+        </span>
       </div>
     </div>
   );

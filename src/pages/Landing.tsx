@@ -5,6 +5,7 @@ import { DollarSign, TrendingUp, PieChart, CreditCard, Shield, Smartphone, Githu
 import { ThemeToggle } from "@/components/ThemeToggle";
 import LandingMockupCarousel from "@/components/LandingMockupCarousel";
 import HeroStockImage from "@/components/HeroStockImage";
+import { useState } from "react";
 
 const featureBubbles = [
   {
@@ -37,6 +38,8 @@ const bgGradients = (
 );
 
 const Landing = () => {
+  const [carouselIndex, setCarouselIndex] = useState(0);
+
   const features = [
     {
       icon: TrendingUp,
@@ -79,43 +82,35 @@ const Landing = () => {
       {bgGradients}
       {/* Header */}
       <header className="bg-white shadow-sm border-b dark:bg-gray-900 dark:border-gray-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center space-x-3 cursor-pointer" onClick={handleLogoClick}>
-              <img 
-                src="/lovable-uploads/62637124-2993-4040-a176-d1e9ed77f87d.png" 
-                alt="FinnTra Logo" 
-                className="h-10 w-10"
-              />
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">FinnTra</h1>
-            </div>
-            <div className="flex space-x-2">
-              <ThemeToggle />
-              <Button variant="outline" onClick={() => window.location.href = '/login'}>
-                Sign In
-              </Button>
-              <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700" onClick={() => window.location.href = '/login'}>
-                Get Started
-              </Button>
-              <Button variant="secondary" onClick={() => window.location.href = '/ai-chat'}>
-                AI Assistant
-              </Button>
-            </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+          <div className="flex items-center space-x-3 cursor-pointer" onClick={handleLogoClick}>
+            <img 
+              src="/lovable-uploads/62637124-2993-4040-a176-d1e9ed77f87d.png" 
+              alt="FinnTra Logo" 
+              className="h-10 w-10"
+            />
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">FinnTra</h1>
+          </div>
+          <div className="flex space-x-2 items-center">
+            <ThemeToggle />
+            <Button variant="outline" onClick={() => window.location.href = '/login'}>
+              Sign In
+            </Button>
+            <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700" onClick={() => window.location.href = '/login'}>
+              Get Started
+            </Button>
+            <Button variant="secondary" onClick={() => window.location.href = '/ai-chat'}>
+              AI Assistant
+            </Button>
           </div>
         </div>
       </header>
 
-      {/* NEW HERO: Playful style, overlapping */}
+      {/* Hero section with carousel-synced stock image */}
       <section className="relative py-24 sm:py-32 flex flex-col items-center z-10 animate-fade-in">
         <div className="max-w-5xl mx-auto px-4 flex flex-col items-center text-center gap-4">
           <div className="relative flex items-center justify-center w-full">
-            <div className="relative inline-block">
-              {/* New stock hero image */}
-              <HeroStockImage />
-              <span className="absolute -top-4 -left-4 bg-gradient-to-br from-indigo-400 via-fuchsia-300 to-amber-200 text-white rounded-full px-4 py-2 text-lg font-bold shadow-lg rotate-[-10deg] animate-fade-in">
-                Hi! I'm Secure
-              </span>
-            </div>
+            <HeroStockImage activeIndex={carouselIndex} />
           </div>
           <h1 className="text-5xl sm:text-6xl font-extrabold text-gray-800 dark:text-white mb-3 leading-tight tracking-tight animate-fade-in">
             Your finances, <span className="bg-gradient-to-r from-indigo-600 to-blue-500 bg-clip-text text-transparent">happy</span> and under control
@@ -160,17 +155,16 @@ const Landing = () => {
             </Button>
           </div>
         </div>
-        {/* playful circle illustration */}
+        {/* Playful circle illustration */}
         <div className="absolute left-1/2 -translate-x-1/2 top-[88%] pointer-events-none z-0">
           <div className="h-12 w-40 bg-gradient-to-br from-indigo-200 via-fuchsia-200 to-amber-100 rounded-full blur-2xl opacity-80"></div>
         </div>
       </section>
-
-      {/* CAROUSEL MOCKUPS - Toshl style */}
+      {/* Professional auto-advance carousel with image sync */}
       <section className="relative py-10 z-10 animate-fade-in">
         <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2 text-center animate-fade-in">Love your charts and reports</h3>
         <p className="text-lg text-gray-600 dark:text-gray-300 mb-5 text-center">Swipe through our colorful, cheerful, and powerful mockups!</p>
-        <LandingMockupCarousel />
+        <LandingMockupCarousel onSlideChange={setCarouselIndex} />
         {/* Professional auto-scroll hint */}
         <div className="mt-4 flex justify-center animate-fade-in">
           <span className="inline-flex items-center bg-indigo-50 dark:bg-indigo-900 px-4 py-2 rounded-full text-indigo-700 dark:text-indigo-100 text-sm ring-1 ring-indigo-300 dark:ring-indigo-800 shadow-sm animate-slide-in-right">
@@ -189,7 +183,7 @@ const Landing = () => {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((feature, index) => (
-              <Card key={index} className="shadow-lg border-0 hover:shadow-xl transition-shadow hover-scale">
+              <Card key={index} className="shadow-lg border-0 hover:scale-105 transition-transform hover:shadow-xl">
                 <CardHeader>
                   <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-3 rounded-lg w-fit">
                     <feature.icon className="h-6 w-6 text-white" />
@@ -205,7 +199,7 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* Developer Section */}
+      {/* Developer Section (dark contact boxes) */}
       <section className="py-20 bg-gradient-to-r from-gray-50 to-blue-50">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 animate-fade-in">
@@ -240,17 +234,17 @@ const Landing = () => {
               <div className="border-t pt-6 mt-6">
                 <h5 className="text-lg font-semibold text-gray-900 mb-4 text-center">Get in Touch</h5>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="flex items-center justify-center space-x-2 p-3 bg-gray-50 rounded-lg hover-scale cursor-pointer">
-                    <Mail className="h-5 w-5 text-blue-600" />
-                    <span className="text-sm">dev@finntra.com</span>
+                  <div className="flex items-center justify-center space-x-2 p-3 bg-black rounded-lg hover:scale-105 cursor-pointer transition-transform">
+                    <Mail className="h-5 w-5 text-white" />
+                    <span className="text-sm text-white">dev@finntra.com</span>
                   </div>
-                  <div className="flex items-center justify-center space-x-2 p-3 bg-gray-50 rounded-lg hover-scale cursor-pointer">
-                    <Github className="h-5 w-5 text-blue-600" />
-                    <span className="text-sm">github.com/finntra</span>
+                  <div className="flex items-center justify-center space-x-2 p-3 bg-black rounded-lg hover:scale-105 cursor-pointer transition-transform">
+                    <Github className="h-5 w-5 text-white" />
+                    <span className="text-sm text-white">github.com/finntra</span>
                   </div>
-                  <div className="flex items-center justify-center space-x-2 p-3 bg-gray-50 rounded-lg hover-scale cursor-pointer">
-                    <Linkedin className="h-5 w-5 text-blue-600" />
-                    <span className="text-sm">linkedin.com/finntra</span>
+                  <div className="flex items-center justify-center space-x-2 p-3 bg-black rounded-lg hover:scale-105 cursor-pointer transition-transform">
+                    <Linkedin className="h-5 w-5 text-white" />
+                    <span className="text-sm text-white">linkedin.com/finntra</span>
                   </div>
                 </div>
               </div>

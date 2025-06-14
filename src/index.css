@@ -220,7 +220,13 @@ tr:hover, .dark tr:hover {
 .smooth-btn.btn-pressed {
   transform: scale(0.92);
 }
-
+.card:hover,
+.hover-scale:hover,
+.animate-scale-in:hover,
+[class*="hover:scale"]:hover {
+  transform: scale(1.05) !important;
+  z-index: 2 !important;
+}
 /* Animate all Cards and titles for more lively UI, especially dashboard/landing pages */
 .animate-fade-in {
   animation: fade-in 0.6s cubic-bezier(.19,1,.22,1.16);

@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/tabs";
 import { DollarSign, Mail, Lock, User } from "lucide-react";
 import DynamicAiHint from "@/components/DynamicAiHint";
+import ThemeToggle from "@/components/ThemeToggle";
 
 const Login = () => {
   const [loginData, setLoginData] = useState({ email: "", password: "" });
@@ -25,6 +26,7 @@ const Login = () => {
     email: "",
     password: "",
     confirmPassword: "",
+    captcha: "",
   });
   const [activeTab, setActiveTab] = useState("login");
   const [rippleStyle, setRippleStyle] = useState<any>(null);
@@ -50,27 +52,27 @@ const Login = () => {
 
   const handleSignup = (e: React.FormEvent) => {
     e.preventDefault();
-    window.location.href = "/dashboard";
+    window.location.href = "/tutorial"; // Walkthrough after sign up
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex flex-col">
       {/* Header */}
       <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center space-x-3 cursor-pointer hover-scale" onClick={handleLogoClick}>
-              <DollarSign className="h-10 w-10 text-indigo-500" />
-              <h1 className="text-2xl font-bold text-gray-900">FinnTra</h1>
-            </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+          <div className="flex items-center space-x-3 cursor-pointer hover-scale" onClick={handleLogoClick}>
+            <DollarSign className="h-10 w-10 text-indigo-500" />
+            <h1 className="text-2xl font-bold text-gray-900">FinnTra</h1>
+          </div>
+          <div className="flex items-center space-x-2">
+            <ThemeToggle />
             <Button variant="outline" onClick={handleLogoClick}>
               Back to Home
             </Button>
           </div>
         </div>
       </header>
-
-      <div className="flex items-center justify-center py-16">
+      <div className="flex items-center justify-center py-10 flex-1">
         <Card className="w-full max-w-md shadow-lg border-0 animate-fade-in">
           <CardHeader className="text-center">
             <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-3 rounded-lg w-fit mx-auto mb-4">
@@ -96,7 +98,7 @@ const Login = () => {
                   Sign Up
                 </TabsTrigger>
               </TabsList>
-              <div className="relative min-h-[390px] overflow-hidden">
+              <div className="relative min-h-[390px] overflow-y-auto">
                 <TabsContent value="login" forceMount>
                   <form
                     onSubmit={handleLogin}
@@ -146,7 +148,7 @@ const Login = () => {
                     </div>
                     <Button
                       type="submit"
-                      className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 relative overflow-hidden ripple-btn"
+                      className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 relative overflow-hidden ripple-btn hover:scale-105"
                       onClick={triggerRipple}
                     >
                       {rippleStyle && (
@@ -169,6 +171,7 @@ const Login = () => {
                         ? "animate-slide-in-left"
                         : "opacity-0 pointer-events-none"
                     }`}
+                    autoComplete="off"
                   >
                     <div className="space-y-2">
                       <Label htmlFor="name">Full Name</Label>
@@ -187,6 +190,7 @@ const Login = () => {
                           }
                           className="pl-10"
                           required
+                          autoComplete="off"
                         />
                       </div>
                     </div>
@@ -207,6 +211,7 @@ const Login = () => {
                           }
                           className="pl-10"
                           required
+                          autoComplete="off"
                         />
                       </div>
                     </div>
@@ -227,6 +232,7 @@ const Login = () => {
                           }
                           className="pl-10"
                           required
+                          autoComplete="new-password"
                         />
                       </div>
                     </div>
@@ -247,6 +253,7 @@ const Login = () => {
                           }
                           className="pl-10"
                           required
+                          autoComplete="new-password"
                         />
                       </div>
                     </div>
@@ -259,14 +266,16 @@ const Login = () => {
                         </span>
                       </Label>
                       <Input id="signup-captcha" type="text" placeholder="Your answer" className="pl-10"
-                        required pattern="8" title="Please solve the captcha question." />
+                        value={signupData.captcha}
+                        onChange={e => setSignupData({ ...signupData, captcha: e.target.value })}
+                        required pattern="8" title="Please solve the captcha question." autoComplete="off" />
                       <span className="text-xs text-muted-foreground block mt-0.5">
                         Please solve the math to continue (demo only).
                       </span>
                     </div>
                     <Button
                       type="submit"
-                      className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 relative overflow-hidden ripple-btn"
+                      className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 relative overflow-hidden ripple-btn hover:scale-105"
                       onClick={triggerRipple}
                     >
                       {rippleStyle && (

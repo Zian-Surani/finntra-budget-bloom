@@ -23,20 +23,12 @@ export const ThemeToggle = () => {
     <button
       aria-label="Toggle theme"
       onClick={toggleTheme}
-      className={`flex items-center w-16 h-8 px-1 rounded-full bg-gradient-to-r from-indigo-300/80 to-blue-400/80 dark:from-gray-800 dark:to-indigo-900 border-2 border-indigo-400 dark:border-indigo-700 shadow-inner transition-all duration-300 relative focus:outline-none overflow-hidden group`}
+      className="flex items-center w-16 h-8 px-1 rounded-full bg-transparent border-2 border-indigo-400 dark:border-indigo-700 shadow-inner transition-all duration-300 relative focus:outline-none overflow-hidden group"
       tabIndex={0}
+      style={{
+        background: "transparent",
+      }}
     >
-      {/* Animated pill background */}
-      <span
-        className={`absolute left-0 top-0 h-full w-1/2 bg-indigo-100 dark:bg-gray-800 rounded-full z-0 transition-all duration-500
-          ${theme === "dark" ? "translate-x-full bg-indigo-600" : ""}
-        `}
-        style={{
-          boxShadow: theme === "dark"
-            ? "0 8px 36px 8px #3730a3"
-            : "0 5px 25px 5px #c7d2fe",
-        }}
-      />
       <span className="z-10 flex-1 flex justify-between items-center w-full">
         <Sun
           size={22}
@@ -49,10 +41,14 @@ export const ThemeToggle = () => {
       </span>
       {/* Animated thumb */}
       <span
-        className={`absolute top-1 left-1 w-6 h-6 bg-white dark:bg-gray-900 rounded-full shadow-md border border-indigo-200 dark:border-indigo-800 transition-all duration-500 ease-out z-20 ${
+        className={`absolute top-1 left-1 w-6 h-6 bg-white/70 dark:bg-gray-900/80 rounded-full shadow-md border border-indigo-200 dark:border-indigo-800 transition-all duration-500 ease-out z-20 ${
           theme === "dark" ? "translate-x-8" : ""
         }`}
-        style={{ willChange: "transform" }}
+        style={{
+          willChange: "transform",
+          background: "rgba(50,50,50,0.2)",
+          backdropFilter: "blur(2px)",
+        }}
       />
     </button>
   );
