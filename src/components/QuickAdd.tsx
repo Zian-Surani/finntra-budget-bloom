@@ -4,12 +4,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Minus, Coffee, Car, ShoppingCart, Home, Heart, Briefcase, Gamepad2 } from 'lucide-react';
+import { Plus, Minus, Coffee, Car, ShoppingCart, Home, Heart, Briefcase, Gamepad2, Edit3 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const QuickAdd = () => {
   const [amount, setAmount] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
+  const [customCategory, setCustomCategory] = useState('');
+  const [showCustomInput, setShowCustomInput] = useState(false);
   const [transactionType, setTransactionType] = useState<'income' | 'expense'>('expense');
   const [step, setStep] = useState(1);
   const { toast } = useToast();
@@ -32,7 +34,19 @@ const QuickAdd = () => {
 
   const handleCategorySelect = (category: string) => {
     setSelectedCategory(category);
+    setShowCustomInput(false);
     setStep(3);
+  };
+
+  const handleCustomCategory = () => {
+    setShowCustomInput(true);
+  };
+
+  const handleCustomCategorySubmit = () => {
+    if (customCategory.trim()) {
+      setSelectedCategory(customCategory);
+      setStep(3);
+    }
   };
 
   const handleTypeSelect = (type: 'income' | 'expense') => {
@@ -41,17 +55,38 @@ const QuickAdd = () => {
   };
 
   const handleSubmit = () => {
-    // Simulate saving the transaction
+    // Create transaction object
+    const transaction = {
+      id: Date.now(),
+      description: selectedCategory,
+      amount: transactionType === 'income' ? parseFloat(amount) : -parseFloat(amount),
+      category: selectedCategory,
+      date: new Date().toISOString().split('T')[0],
+      type: transactionType
+    };
+
+    // Store in localStorage for demo purposes
+    const existingTransactions = JSON.parse(localStorage.getItem('transactions') || '[]');
+    existingTransactions.unshift(transaction);
+    localStorage.setItem('transactions', JSON.stringify(existingTransactions));
+
     toast({
       title: "Transaction Added!",
       description: `${transactionType === 'income' ? '+' : '-'}$${amount} for ${selectedCategory}`,
     });
     
-    // Reset form
+    // Reset form and redirect to overview
     setAmount('');
     setSelectedCategory('');
+    setCustomCategory('');
     setTransactionType('expense');
     setStep(1);
+    setShowCustomInput(false);
+    
+    // Redirect to dashboard overview after a brief delay
+    setTimeout(() => {
+      window.location.href = '/dashboard';
+    }, 1500);
   };
 
   const getTapIndicator = () => {
@@ -107,24 +142,61 @@ const QuickAdd = () => {
           <div className="space-y-4">
             <div className="text-center">
               <h3 className="text-lg font-semibold mb-4">Tap 2: Choose Category</h3>
-              <div className="grid grid-cols-2 gap-3">
-                {categories.map((category) => {
-                  const IconComponent = category.icon;
-                  return (
+              {!showCustomInput ? (
+                <>
+                  <div className="grid grid-cols-2 gap-3 mb-4">
+                    {categories.map((category) => {
+                      const IconComponent = category.icon;
+                      return (
+                        <Button
+                          key={category.name}
+                          variant="outline"
+                          onClick={() => handleCategorySelect(category.name)}
+                          className="h-20 flex flex-col items-center justify-center space-y-2 hover:scale-105 transition-transform"
+                        >
+                          <div className={`p-2 rounded-full ${category.color}`}>
+                            <IconComponent className="h-5 w-5 text-white" />
+                          </div>
+                          <span className="text-xs">{category.name}</span>
+                        </Button>
+                      );
+                    })}
+                  </div>
+                  <Button
+                    variant="outline"
+                    onClick={handleCustomCategory}
+                    className="w-full h-16 flex items-center justify-center space-x-2 border-dashed border-2"
+                  >
+                    <Edit3 className="h-5 w-5" />
+                    <span>Custom Category</span>
+                  </Button>
+                </>
+              ) : (
+                <div className="space-y-4">
+                  <Input
+                    placeholder="Enter custom category name"
+                    value={customCategory}
+                    onChange={(e) => setCustomCategory(e.target.value)}
+                    autoFocus
+                  />
+                  <div className="flex gap-2">
                     <Button
-                      key={category.name}
-                      variant="outline"
-                      onClick={() => handleCategorySelect(category.name)}
-                      className="h-20 flex flex-col items-center justify-center space-y-2 hover:scale-105 transition-transform"
+                      onClick={handleCustomCategorySubmit}
+                      disabled={!customCategory.trim()}
+                      className="flex-1"
                     >
-                      <div className={`p-2 rounded-full ${category.color}`}>
-                        <IconComponent className="h-5 w-5 text-white" />
-                      </div>
-                      <span className="text-xs">{category.name}</span>
+                      Use Custom
                     </Button>
-                  );
-                })}
-              </div>
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowCustomInput(false)}
+                      className="flex-1"
+                    >
+                      Back
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -187,7 +259,13 @@ const QuickAdd = () => {
         {step > 1 && (
           <Button
             variant="outline"
-            onClick={() => setStep(step - 1)}
+            onClick={() => {
+              if (step === 2 && showCustomInput) {
+                setShowCustomInput(false);
+              } else {
+                setStep(step - 1);
+              }
+            }}
             className="w-full mt-2"
           >
             Back

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -33,27 +33,45 @@ import { useCurrencyConverter } from "@/hooks/useCurrencyConverter";
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [hasNewTransaction, setHasNewTransaction] = useState(false);
-  const { formatCurrency } = useCurrencyConverter();
+  const [recentTransactions, setRecentTransactions] = useState([
+    { id: 1, description: "Grocery Store", amount: -85.43, category: "Food", date: "2024-01-15" },
+    { id: 2, description: "Salary Deposit", amount: 3500.00, category: "Income", date: "2024-01-15" },
+    { id: 3, description: "Electric Bill", amount: -120.00, category: "Utilities", date: "2024-01-14" },
+    { id: 4, description: "Coffee Shop", amount: -12.50, category: "Food", date: "2024-01-14" },
+  ]);
+  const { formatCurrency, selectedCurrency, convertAmount } = useCurrencyConverter();
 
-  // Mock data for the dashboard
+  // Load transactions from localStorage on component mount
+  useEffect(() => {
+    const savedTransactions = JSON.parse(localStorage.getItem('transactions') || '[]');
+    if (savedTransactions.length > 0) {
+      setRecentTransactions(prev => {
+        const combined = [...savedTransactions, ...prev];
+        return combined.slice(0, 10); // Keep only latest 10
+      });
+      setHasNewTransaction(true);
+    }
+  }, []);
+
+  // Mock data for the dashboard with currency conversion
   const stats = [
     {
       title: "Total Balance",
-      value: "$18,222.57",
+      value: convertAmount(18222.57, 'USD', selectedCurrency),
       change: "+12.5%",
       icon: DollarSign,
       color: "text-green-600"
     },
     {
       title: "Monthly Income",
-      value: "$5,400.00",
+      value: convertAmount(5400.00, 'USD', selectedCurrency),
       change: "+8.2%",
       icon: TrendingUp,
       color: "text-blue-600"
     },
     {
       title: "Monthly Expenses",
-      value: "$3,284.50",
+      value: convertAmount(3284.50, 'USD', selectedCurrency),
       change: "-3.1%",
       icon: CreditCard,
       color: "text-red-600"
@@ -63,30 +81,24 @@ const Dashboard = () => {
       value: "39.2%",
       change: "+4.1%",
       icon: PieChart,
-      color: "text-purple-600"
+      color: "text-purple-600",
+      isPercentage: true
     }
-  ];
-
-  const recentTransactions = [
-    { id: 1, description: "Grocery Store", amount: -85.43, category: "Food", date: "2024-01-15" },
-    { id: 2, description: "Salary Deposit", amount: 3500.00, category: "Income", date: "2024-01-15" },
-    { id: 3, description: "Electric Bill", amount: -120.00, category: "Utilities", date: "2024-01-14" },
-    { id: 4, description: "Coffee Shop", amount: -12.50, category: "Food", date: "2024-01-14" },
   ];
 
   const quickActions = [
     { title: "Quick Expense Report", icon: FileText, action: () => window.location.href = '/expense-report' },
-    { title: "View Summary", icon: BarChart3, action: () => window.location.href = '/dashboard/user' },
+    { title: "View Summary", icon: BarChart3, action: () => window.location.href = '/user-summary' },
     { title: "Check Balances", icon: Building2, action: () => window.location.href = '/bank-connections' },
     { title: "Taxes", icon: Calculator, action: () => window.location.href = '/tax-calculator' },
     { title: "Record Income", icon: TrendingUp, action: () => window.location.href = '/add-entries' }
   ];
 
   // Create a wrapper function that matches the expected signature
-  const formatCurrencyForReport = (amount: number) => formatCurrency(amount, 'USD');
+  const formatCurrencyForReport = (amount: number) => formatCurrency(amount, selectedCurrency);
 
   const handleLogout = () => {
-    // In a real app, this would clear the session
+    localStorage.clear();
     window.location.href = '/';
   };
 
@@ -101,9 +113,6 @@ const Dashboard = () => {
           </div>
           <div className="flex items-center space-x-4">
             <CurrencySelector />
-            <Button variant="outline" size="sm">
-              <Bell className="h-4 w-4" />
-            </Button>
             <Button variant="outline" size="sm" onClick={() => window.location.href = '/settings'}>
               <Settings className="h-4 w-4" />
             </Button>
@@ -193,7 +202,9 @@ const Dashboard = () => {
                       <IconComponent className={`h-4 w-4 ${stat.color}`} />
                     </CardHeader>
                     <CardContent>
-                      <div className="text-2xl font-bold">{stat.value}</div>
+                      <div className="text-2xl font-bold">
+                        {stat.isPercentage ? stat.value : formatCurrency(stat.value, selectedCurrency)}
+                      </div>
                       <p className={`text-xs ${stat.change.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
                         {stat.change} from last month
                       </p>
@@ -220,7 +231,8 @@ const Dashboard = () => {
                         </p>
                       </div>
                       <div className={`font-bold ${transaction.amount > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                        {transaction.amount > 0 ? '+' : ''}${Math.abs(transaction.amount).toFixed(2)}
+                        {transaction.amount > 0 ? '+' : ''}
+                        {formatCurrency(Math.abs(convertAmount(transaction.amount, 'USD', selectedCurrency)), selectedCurrency)}
                       </div>
                     </div>
                   ))}
@@ -326,7 +338,7 @@ const Dashboard = () => {
               <FinancialAnalytics />
               <ReportGenerator 
                 transactions={recentTransactions} 
-                currency="USD" 
+                currency={selectedCurrency} 
                 formatCurrency={formatCurrencyForReport} 
               />
             </div>

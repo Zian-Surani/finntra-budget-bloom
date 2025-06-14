@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -22,6 +21,7 @@ const ImportFiles = lazy(() => import("./pages/ImportFiles"));
 const Settings = lazy(() => import("./pages/Settings"));
 const ExpenseReport = lazy(() => import("./pages/ExpenseReport"));
 const TaxCalculator = lazy(() => import("./pages/TaxCalculator"));
+const UserSummary = lazy(() => import("./pages/UserSummary"));
 
 const queryClient = new QueryClient();
 
@@ -46,6 +46,7 @@ const App = () => (
             <Route path="/settings" element={<Suspense fallback={<MessageLoading />}><Settings /></Suspense>} />
             <Route path="/expense-report" element={<Suspense fallback={<MessageLoading />}><ExpenseReport /></Suspense>} />
             <Route path="/tax-calculator" element={<Suspense fallback={<MessageLoading />}><TaxCalculator /></Suspense>} />
+            <Route path="/user-summary" element={<Suspense fallback={<MessageLoading />}><UserSummary /></Suspense>} />
             <Route path="*" element={<Suspense fallback={<MessageLoading />}><NotFound /></Suspense>} />
           </Routes>
         </Suspense>
