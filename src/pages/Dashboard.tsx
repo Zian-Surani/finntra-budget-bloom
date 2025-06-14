@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -14,10 +15,8 @@ import {
   Smartphone,
   BarChart3,
   Settings,
-  Bell,
   Calculator,
-  FileText,
-  Receipt
+  FileText
 } from 'lucide-react';
 import { ThemeToggle } from "@/components/ThemeToggle";
 import FinancialAnalytics from "@/components/FinancialAnalytics";
@@ -57,28 +56,31 @@ const Dashboard = () => {
   const stats = [
     {
       title: "Total Balance",
-      value: convertAmount(18222.57, 'USD', selectedCurrency),
+      value: 18222.57,
       change: "+12.5%",
       icon: DollarSign,
-      color: "text-green-600"
+      color: "text-green-600",
+      isNumeric: true
     },
     {
       title: "Monthly Income",
-      value: convertAmount(5400.00, 'USD', selectedCurrency),
+      value: 5400.00,
       change: "+8.2%",
       icon: TrendingUp,
-      color: "text-blue-600"
+      color: "text-blue-600",
+      isNumeric: true
     },
     {
       title: "Monthly Expenses",
-      value: convertAmount(3284.50, 'USD', selectedCurrency),
+      value: 3284.50,
       change: "-3.1%",
       icon: CreditCard,
-      color: "text-red-600"
+      color: "text-red-600",
+      isNumeric: true
     },
     {
       title: "Savings Rate",
-      value: "39.2%",
+      value: 39.2,
       change: "+4.1%",
       icon: PieChart,
       color: "text-purple-600",
@@ -195,6 +197,12 @@ const Dashboard = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {stats.map((stat, index) => {
                 const IconComponent = stat.icon;
+                const displayValue = stat.isPercentage 
+                  ? `${stat.value}%` 
+                  : stat.isNumeric 
+                    ? formatCurrency(convertAmount(stat.value, 'USD', selectedCurrency), selectedCurrency)
+                    : stat.value;
+                
                 return (
                   <Card key={index} className="hover:scale-105 transition-transform relative">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -203,7 +211,7 @@ const Dashboard = () => {
                     </CardHeader>
                     <CardContent>
                       <div className="text-2xl font-bold">
-                        {stat.isPercentage ? stat.value : formatCurrency(stat.value, selectedCurrency)}
+                        {displayValue}
                       </div>
                       <p className={`text-xs ${stat.change.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
                         {stat.change} from last month
