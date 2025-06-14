@@ -6,6 +6,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import LandingMockupCarousel from "@/components/LandingMockupCarousel";
 import HeroStockImage, { HERO_IMAGES, HERO_LOGO_SRC } from "@/components/HeroStockImage";
 import { useState } from "react";
+
 const featureBubbles = [{
   text: "Automatic Sync",
   emoji: "🔗"
@@ -57,7 +58,7 @@ const Landing = () => {
   const handleLogoClick = () => {
     window.location.href = '/';
   };
-  // Center logo above hero
+  
   return <div className="relative min-h-screen font-sans overflow-x-hidden bg-gradient-to-br from-indigo-50 via-blue-100 to-white dark:from-gray-950 dark:via-gray-900 dark:to-slate-950 transition-colors duration-700">
       {bgGradients}
       {/* Header */}
@@ -69,13 +70,13 @@ const Landing = () => {
           </div>
           <div className="flex space-x-2 items-center">
             <ThemeToggle />
-            <Button variant="outline" onClick={() => window.location.href = '/login'}>
+            <Button variant="outline" className="hover:scale-110 transition-transform duration-200" onClick={() => window.location.href = '/login'}>
               Sign In
             </Button>
-            <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700" onClick={() => window.location.href = '/login'}>
+            <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 hover:scale-110 transition-transform duration-200" onClick={() => window.location.href = '/login'}>
               Get Started
             </Button>
-            <Button variant="secondary" onClick={() => window.location.href = '/ai-chat'}>
+            <Button variant="secondary" className="hover:scale-110 transition-transform duration-200" onClick={() => window.location.href = '/ai-chat'}>
               AI Assistant
             </Button>
           </div>
@@ -116,14 +117,14 @@ const Landing = () => {
               </span>)}
           </div>
           <div className="flex justify-center space-x-4 mt-6 animate-fade-in delay-200">
-            <Button size="lg" className="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-blue-700 hover:to-indigo-700 hover:scale-105 drop-shadow-xl shadow-blue-300 smooth-btn" onClick={e => {
+            <Button size="lg" className="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-blue-700 hover:to-indigo-700 hover:scale-110 active:scale-95 drop-shadow-xl shadow-blue-300 smooth-btn transition-transform duration-200" onClick={e => {
             e.currentTarget.classList.add("btn-pressed");
             setTimeout(() => e.currentTarget.classList.remove("btn-pressed"), 240);
             window.location.href = '/login';
           }}>
               Get Started Free
             </Button>
-            <Button size="lg" variant="outline" className="hover:scale-105 bg-white/50 dark:bg-slate-800/70 border-2 border-indigo-300 dark:border-indigo-700 shadow smooth-btn" onClick={e => {
+            <Button size="lg" variant="outline" className="hover:scale-110 active:scale-95 bg-white/50 dark:bg-slate-800/70 border-2 border-indigo-300 dark:border-indigo-700 shadow smooth-btn transition-transform duration-200" onClick={e => {
             e.currentTarget.classList.add("btn-pressed");
             setTimeout(() => e.currentTarget.classList.remove("btn-pressed"), 240);
             window.location.href = '/dashboard';
@@ -150,7 +151,7 @@ const Landing = () => {
               </div>
               <h4 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">Bank connections</h4>
               <p className="text-gray-600 dark:text-gray-300 mb-4">12379 bank & financial service connections worldwide</p>
-              <Button variant="outline" className="w-full">Learn more: Bank connections</Button>
+              <Button variant="outline" className="w-full hover:scale-105 transition-transform duration-200" onClick={() => window.location.href = '/bank-connections'}>Learn more: Bank connections</Button>
             </div>
 
             {/* Add in the app */}
@@ -160,7 +161,7 @@ const Landing = () => {
               </div>
               <h4 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">Add in the app</h4>
               <p className="text-gray-600 dark:text-gray-300 mb-4">4 quick taps to add an expense or income</p>
-              <Button variant="outline" className="w-full">Learn more: Adding entries</Button>
+              <Button variant="outline" className="w-full hover:scale-105 transition-transform duration-200" onClick={() => window.location.href = '/add-entries'}>Learn more: Adding entries</Button>
             </div>
 
             {/* Import from file */}
@@ -170,7 +171,7 @@ const Landing = () => {
               </div>
               <h4 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">Import from file</h4>
               <p className="text-gray-600 dark:text-gray-300 mb-4">8 file import formats supported in the web app</p>
-              <Button variant="outline" className="w-full">Learn more: Importing</Button>
+              <Button variant="outline" className="w-full hover:scale-105 transition-transform duration-200" onClick={() => window.location.href = '/import-files'}>Learn more: Importing</Button>
             </div>
           </div>
         </div>
