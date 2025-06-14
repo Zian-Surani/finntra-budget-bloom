@@ -6,7 +6,6 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import LandingMockupCarousel from "@/components/LandingMockupCarousel";
 import HeroStockImage, { HERO_IMAGES, HERO_LOGO_SRC } from "@/components/HeroStockImage";
 import { useState } from "react";
-
 const featureBubbles = [{
   text: "Automatic Sync",
   emoji: "🔗"
@@ -58,7 +57,6 @@ const Landing = () => {
   const handleLogoClick = () => {
     window.location.href = '/';
   };
-  
   return <div className="relative min-h-screen font-sans overflow-x-hidden bg-gradient-to-br from-indigo-50 via-blue-100 to-white dark:from-gray-950 dark:via-gray-900 dark:to-slate-950 transition-colors duration-700">
       {bgGradients}
       {/* Header */}
@@ -178,11 +176,7 @@ const Landing = () => {
       </section>
 
       {/* Auto-advance carousel */}
-      <section className="py-12 bg-white dark:bg-gray-950">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <LandingMockupCarousel onSlideChange={setCarouselIndex} />
-        </div>
-      </section>
+      
 
       {/* Features Section */}
       <section className="py-20 bg-white">
