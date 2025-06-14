@@ -1,8 +1,8 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { DollarSign, TrendingUp, PieChart, CreditCard, Shield, Smartphone, Github, Linkedin, Mail, Phone } from 'lucide-react';
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const Landing = () => {
   const features = [
@@ -45,7 +45,7 @@ const Landing = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b">
+      <header className="bg-white shadow-sm border-b dark:bg-gray-900 dark:border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-3 cursor-pointer" onClick={handleLogoClick}>
@@ -54,9 +54,10 @@ const Landing = () => {
                 alt="FinnTra Logo" 
                 className="h-10 w-10"
               />
-              <h1 className="text-3xl font-bold text-gray-900">FinnTra</h1>
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">FinnTra</h1>
             </div>
-            <div className="flex space-x-4">
+            <div className="flex space-x-2">
+              <ThemeToggle />
               <Button variant="outline" onClick={() => window.location.href = '/login'}>
                 Sign In
               </Button>
@@ -167,6 +168,29 @@ const Landing = () => {
               </div>
             </CardContent>
           </Card>
+        </div>
+      </section>
+
+      {/* Mockups Section */}
+      <section className="py-12 bg-gradient-to-r from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="p-6 bg-white dark:bg-gray-900 rounded-2xl shadow-lg flex flex-col items-center text-center animate-fade-in">
+              <img src="/lovable-uploads/62637124-2993-4040-a176-d1e9ed77f87d.png" className="w-20 h-20 mb-4" alt="Mobile Mockup"/>
+              <h3 className="font-bold text-lg mb-2 text-gray-800 dark:text-white">Mobile-First Design</h3>
+              <p className="text-gray-500 dark:text-gray-400">Track expenses easily from your phone. UI optimized for fast input anywhere, anytime.</p>
+            </div>
+            <div className="p-6 bg-white dark:bg-gray-900 rounded-2xl shadow-lg flex flex-col items-center text-center animate-fade-in delay-100">
+              <img src="/lovable-uploads/62637124-2993-4040-a176-d1e9ed77f87d.png" className="w-20 h-20 mb-4" alt="Charts Mockup"/>
+              <h3 className="font-bold text-lg mb-2 text-gray-800 dark:text-white">AI-Powered Suggestions</h3>
+              <p className="text-gray-500 dark:text-gray-400">Let the assistant help you save with personalized finance tips.</p>
+            </div>
+            <div className="p-6 bg-white dark:bg-gray-900 rounded-2xl shadow-lg flex flex-col items-center text-center animate-fade-in delay-200">
+              <img src="/lovable-uploads/62637124-2993-4040-a176-d1e9ed77f87d.png" className="w-20 h-20 mb-4" alt="Desktop Mockup"/>
+              <h3 className="font-bold text-lg mb-2 text-gray-800 dark:text-white">Beautiful Visual Reports</h3>
+              <p className="text-gray-500 dark:text-gray-400">Your finances, visualized in engaging and colorful ways on any device.</p>
+            </div>
+          </div>
         </div>
       </section>
 
