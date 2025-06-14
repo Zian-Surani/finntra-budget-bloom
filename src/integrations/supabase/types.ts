@@ -58,33 +58,45 @@ export type Database = {
           address: string | null
           created_at: string | null
           email: string
+          has_accounts: boolean | null
+          has_cards: boolean | null
           id: string
+          is_onboarded: boolean | null
           monthly_income: number | null
           name: string
           occupation: string | null
           phone: string | null
+          profile_photo: string | null
           updated_at: string | null
         }
         Insert: {
           address?: string | null
           created_at?: string | null
           email: string
+          has_accounts?: boolean | null
+          has_cards?: boolean | null
           id: string
+          is_onboarded?: boolean | null
           monthly_income?: number | null
           name: string
           occupation?: string | null
           phone?: string | null
+          profile_photo?: string | null
           updated_at?: string | null
         }
         Update: {
           address?: string | null
           created_at?: string | null
           email?: string
+          has_accounts?: boolean | null
+          has_cards?: boolean | null
           id?: string
+          is_onboarded?: boolean | null
           monthly_income?: number | null
           name?: string
           occupation?: string | null
           phone?: string | null
+          profile_photo?: string | null
           updated_at?: string | null
         }
         Relationships: []

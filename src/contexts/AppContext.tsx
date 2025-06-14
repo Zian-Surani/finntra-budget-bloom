@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './AuthContext';
@@ -97,9 +98,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     let subscription: any = null;
 
     if (user && session) {
-      // Setup realtime subscriptions
+      // Setup realtime subscriptions with unique channel name
+      const channelName = `user-data-changes-${user.id}-${Date.now()}`;
       subscription = supabase
-        .channel(`user-data-changes-${user.id}`)
+        .channel(channelName)
         .on('postgres_changes', 
           { 
             event: '*', 
@@ -169,7 +171,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         supabase.removeChannel(subscription);
       }
     };
-  }, [user?.id, session]); // Only depend on user.id and session to prevent unnecessary re-subscriptions
+  }, [user?.id, session]);
 
   const loadUserData = async () => {
     if (!user) return;
@@ -210,11 +212,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         .eq('user_id', user.id)
         .single();
 
-      // Determine if user is new
-      const hasCards = (banks && banks.length > 0) || profile?.has_cards === true;
-      const hasAccounts = (banks && banks.length > 0) || profile?.has_accounts === true;
-      const isOnboarded = profile?.is_onboarded === true;
-      const isNewUser = !isOnboarded || (!hasCards && !hasAccounts && (!transactions || transactions.length === 0));
+      // Determine if user is new - check actual data rather than database flags
+      const hasRealBanks = banks && banks.length > 0;
+      const hasRealTransactions = transactions && transactions.length > 0;
+      const hasValidProfile = profile?.name && profile.name.trim() !== '' && profile.name !== 'John Doe';
+      
+      const isNewUser = !hasValidProfile || (!hasRealBanks && !hasRealTransactions);
 
       setState(prev => ({
         ...prev,
@@ -226,9 +229,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           occupation: profile?.occupation || '',
           monthly_income: profile?.monthly_income || 0,
           profile_photo: profile?.profile_photo || '',
-          has_cards: hasCards,
-          has_accounts: hasAccounts,
-          is_onboarded: isOnboarded
+          has_cards: profile?.has_cards || false,
+          has_accounts: profile?.has_accounts || false,
+          is_onboarded: profile?.is_onboarded || false
         },
         banks: banks || [],
         savingsGoals: savingsGoals || [],
