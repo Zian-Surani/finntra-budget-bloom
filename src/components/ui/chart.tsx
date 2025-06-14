@@ -51,6 +51,9 @@ const ChartContainer = React.forwardRef<
         ref={ref}
         className={cn(
           "chart-pro flex aspect-video justify-center text-xs [&_.recharts-cartesian-axis-tick_text]:fill-muted-foreground [&_.recharts-cartesian-grid_line[stroke='#ccc']]:stroke-border/50 [&_.recharts-curve.recharts-tooltip-cursor]:stroke-border [&_.recharts-dot[stroke='#fff']]:stroke-transparent [&_.recharts-layer]:outline-none [&_.recharts-polar-grid_[stroke='#ccc']]:stroke-border [&_.recharts-radial-bar-background-sector]:fill-muted [&_.recharts-rectangle.recharts-tooltip-cursor]:fill-muted [&_.recharts-reference-line_[stroke='#ccc']]:stroke-border [&_.recharts-sector[stroke='#fff']]:stroke-transparent [&_.recharts-sector]:outline-none [&_.recharts-surface]:outline-none",
+          // Professional dark/lite shadow & border
+          "rounded-xl border border-indigo-200 dark:border-indigo-700 bg-white dark:bg-gradient-to-br dark:from-gray-900 dark:to-gray-800 shadow-md hover:shadow-xl transition-shadow animate-fade-in",
+          "p-4 sm:p-6",
           className
         )}
         {...props}

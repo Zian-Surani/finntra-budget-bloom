@@ -1,10 +1,10 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { FileText, Download } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import jsPDF from "jspdf";
 
 interface ReportGeneratorProps {
   transactions: any[];
@@ -17,14 +17,28 @@ export const ReportGenerator = ({ transactions, currency, formatCurrency }: Repo
   const { toast } = useToast();
 
   const generateReport = () => {
-    // In a real app, this would generate an actual PDF
+    // Render a PDF using jsPDF
     toast({
       title: "Report Generated",
       description: `${reportType.charAt(0).toUpperCase() + reportType.slice(1)} report has been generated successfully.`,
     });
-    
-    // Simulate PDF download
-    console.log(`Generating ${reportType} report with ${transactions.length} transactions in ${currency}`);
+
+    const doc = new jsPDF();
+    doc.setFontSize(16);
+    doc.text(`FinnTra ${reportType.charAt(0).toUpperCase()+reportType.slice(1)} Report`, 14, 18);
+    doc.setFontSize(11);
+    doc.text(`Transactions: ${transactions.length}  |  Currency: ${currency}`, 14, 27);
+    doc.line(14, 30, 196, 30);
+    let y = 38;
+    transactions.slice(0, 30).forEach((t: any, i: number) => {
+      doc.text(`${i+1}. ${t.description || t.name||'Transaction'} - ${formatCurrency(t.amount)}`, 14, y);
+      y += 8;
+      if (y > 280) {
+        doc.addPage();
+        y = 20;
+      }
+    });
+    doc.save(`${reportType}-report.pdf`);
   };
 
   return (

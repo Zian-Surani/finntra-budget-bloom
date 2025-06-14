@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import {
   Card,
@@ -17,6 +16,7 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs";
 import { DollarSign, Mail, Lock, User } from "lucide-react";
+import DynamicAiHint from "@/components/DynamicAiHint";
 
 const Login = () => {
   const [loginData, setLoginData] = useState({ email: "", password: "" });
@@ -80,6 +80,7 @@ const Login = () => {
             <CardDescription>Manage your finances with ease</CardDescription>
           </CardHeader>
           <CardContent>
+            <DynamicAiHint />
             <Tabs defaultValue="login" value={activeTab} onValueChange={setActiveTab} className="space-y-6 transition-all duration-500">
               <TabsList className="grid w-full grid-cols-2 overflow-hidden rounded-lg">
                 <TabsTrigger
@@ -95,7 +96,7 @@ const Login = () => {
                   Sign Up
                 </TabsTrigger>
               </TabsList>
-              <div className="relative min-h-[330px] overflow-hidden">
+              <div className="relative min-h-[390px] overflow-hidden">
                 <TabsContent value="login" forceMount>
                   <form
                     onSubmit={handleLogin}
@@ -248,6 +249,20 @@ const Login = () => {
                           required
                         />
                       </div>
+                    </div>
+                    {/* Demo Captcha */}
+                    <div className="space-y-1">
+                      <Label htmlFor="signup-captcha" className="flex items-center gap-1">
+                        <span>Captcha</span>
+                        <span className="inline-block rounded px-2 py-0.5 text-xs text-indigo-700 bg-indigo-100 dark:bg-indigo-800 dark:text-indigo-300 ml-2">
+                          What is 3 + 5?
+                        </span>
+                      </Label>
+                      <Input id="signup-captcha" type="text" placeholder="Your answer" className="pl-10"
+                        required pattern="8" title="Please solve the captcha question." />
+                      <span className="text-xs text-muted-foreground block mt-0.5">
+                        Please solve the math to continue (demo only).
+                      </span>
                     </div>
                     <Button
                       type="submit"
