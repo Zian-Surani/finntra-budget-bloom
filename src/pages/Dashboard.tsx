@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -16,7 +15,8 @@ import {
   BarChart3,
   Settings,
   Calculator,
-  FileText
+  FileText,
+  AlertCircle
 } from 'lucide-react';
 import { ThemeToggle } from "@/components/ThemeToggle";
 import FinancialAnalytics from "@/components/FinancialAnalytics";
@@ -28,60 +28,60 @@ import { UserProfileDropdown } from "@/components/UserProfileDropdown";
 import { RealtimeUpdates } from "@/components/RealtimeUpdates";
 import { ReportGenerator } from "@/components/ReportGenerator";
 import { useCurrencyConverter } from "@/hooks/useCurrencyConverter";
+import { useAppContext } from "@/contexts/AppContext";
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
-  const [hasNewTransaction, setHasNewTransaction] = useState(false);
-  const [recentTransactions, setRecentTransactions] = useState([
-    { id: 1, description: "Grocery Store", amount: -85.43, category: "Food", date: "2024-01-15" },
-    { id: 2, description: "Salary Deposit", amount: 3500.00, category: "Income", date: "2024-01-15" },
-    { id: 3, description: "Electric Bill", amount: -120.00, category: "Utilities", date: "2024-01-14" },
-    { id: 4, description: "Coffee Shop", amount: -12.50, category: "Food", date: "2024-01-14" },
-  ]);
+  const { state } = useAppContext();
   const { formatCurrency, selectedCurrency, convertAmount } = useCurrencyConverter();
 
-  // Load transactions from localStorage on component mount
-  useEffect(() => {
-    const savedTransactions = JSON.parse(localStorage.getItem('transactions') || '[]');
-    if (savedTransactions.length > 0) {
-      setRecentTransactions(prev => {
-        const combined = [...savedTransactions, ...prev];
-        return combined.slice(0, 10); // Keep only latest 10
-      });
-      setHasNewTransaction(true);
-    }
-  }, []);
+  // Calculate real stats from user data
+  const totalBalance = state.banks.reduce((sum, bank) => sum + bank.balance, 0);
+  const monthlyIncome = state.userData.monthly_income || 0;
+  
+  // Calculate monthly expenses from transactions
+  const currentMonth = new Date().getMonth();
+  const currentYear = new Date().getFullYear();
+  const monthlyExpenses = state.transactions
+    .filter(t => {
+      const transactionDate = new Date(t.date);
+      return t.type === 'expense' && 
+             transactionDate.getMonth() === currentMonth && 
+             transactionDate.getFullYear() === currentYear;
+    })
+    .reduce((sum, t) => sum + Math.abs(t.amount), 0);
 
-  // Mock data for the dashboard with currency conversion
+  const savingsRate = monthlyIncome > 0 ? ((monthlyIncome - monthlyExpenses) / monthlyIncome) * 100 : 0;
+
   const stats = [
     {
       title: "Total Balance",
-      value: 18222.57,
-      change: "+12.5%",
+      value: totalBalance,
+      change: state.banks.length > 0 ? "+0.0%" : "Add accounts to track",
       icon: DollarSign,
       color: "text-green-600",
       isNumeric: true
     },
     {
       title: "Monthly Income",
-      value: 5400.00,
-      change: "+8.2%",
+      value: monthlyIncome,
+      change: monthlyIncome > 0 ? "+0.0%" : "Set in profile",
       icon: TrendingUp,
       color: "text-blue-600",
       isNumeric: true
     },
     {
       title: "Monthly Expenses",
-      value: 3284.50,
-      change: "-3.1%",
+      value: monthlyExpenses,
+      change: monthlyExpenses > 0 ? "-0.0%" : "No expenses yet",
       icon: CreditCard,
       color: "text-red-600",
       isNumeric: true
     },
     {
       title: "Savings Rate",
-      value: 39.2,
-      change: "+4.1%",
+      value: savingsRate,
+      change: savingsRate > 0 ? "+0.0%" : "Start saving",
       icon: PieChart,
       color: "text-purple-600",
       isPercentage: true
@@ -96,12 +96,42 @@ const Dashboard = () => {
     { title: "Record Income", icon: TrendingUp, action: () => window.location.href = '/add-entries' }
   ];
 
-  // Create a wrapper function that matches the expected signature
   const formatCurrencyForReport = (amount: number) => formatCurrency(amount, selectedCurrency);
 
   const handleLogout = () => {
     localStorage.clear();
     window.location.href = '/';
+  };
+
+  // New user welcome message
+  const renderNewUserWelcome = () => {
+    if (!state.isNewUser) return null;
+
+    return (
+      <Card className="mb-6 border-blue-200 bg-blue-50 dark:bg-blue-900/20">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-blue-700 dark:text-blue-300">
+            <AlertCircle className="h-5 w-5" />
+            Welcome to FinnTra!
+          </CardTitle>
+          <CardDescription className="text-blue-600 dark:text-blue-400">
+            You're just getting started. Add your first transaction or connect a bank account to see your financial data here.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex gap-3 flex-wrap">
+            <Button onClick={() => setActiveTab('quick-add')} className="bg-blue-600 hover:bg-blue-700">
+              <Plus className="h-4 w-4 mr-2" />
+              Add First Transaction
+            </Button>
+            <Button onClick={() => setActiveTab('banks')} variant="outline">
+              <Building2 className="h-4 w-4 mr-2" />
+              Connect Bank Account
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
   };
 
   return (
@@ -130,19 +160,20 @@ const Dashboard = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-6 text-center">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-            Welcome back! 👋
+            Welcome back{state.userData.name ? `, ${state.userData.name}` : ''}! 👋
           </h2>
           <p className="text-gray-600 dark:text-gray-400">
-            Here's your financial overview for today
+            {state.isNewUser ? "Let's get started with your financial journey" : "Here's your financial overview for today"}
           </p>
         </div>
 
+        {renderNewUserWelcome()}
+
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-6 lg:w-max">
-            <TabsTrigger value="overview" className="flex items-center gap-2 relative">
+            <TabsTrigger value="overview" className="flex items-center gap-2">
               <BarChart3 className="h-4 w-4" />
               Overview
-              <RealtimeUpdates hasNewUpdate={hasNewTransaction} />
             </TabsTrigger>
             <TabsTrigger value="quick-add" className="flex items-center gap-2">
               <Plus className="h-4 w-4" />
@@ -198,7 +229,7 @@ const Dashboard = () => {
               {stats.map((stat, index) => {
                 const IconComponent = stat.icon;
                 const displayValue = stat.isPercentage 
-                  ? `${stat.value}%` 
+                  ? `${stat.value.toFixed(1)}%` 
                   : stat.isNumeric && typeof stat.value === 'number'
                     ? formatCurrency(convertAmount(stat.value, 'USD', selectedCurrency), selectedCurrency)
                     : stat.value;
@@ -213,8 +244,8 @@ const Dashboard = () => {
                       <div className="text-2xl font-bold">
                         {displayValue}
                       </div>
-                      <p className={`text-xs ${stat.change.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
-                        {stat.change} from last month
+                      <p className="text-xs text-gray-600 dark:text-gray-400">
+                        {stat.change}
                       </p>
                     </CardContent>
                   </Card>
@@ -226,25 +257,45 @@ const Dashboard = () => {
             <Card>
               <CardHeader>
                 <CardTitle>Recent Transactions</CardTitle>
-                <CardDescription>Your latest financial activity</CardDescription>
+                <CardDescription>
+                  {state.transactions.length === 0 
+                    ? "No transactions yet - add your first transaction above"
+                    : "Your latest financial activity"
+                  }
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {recentTransactions.map((transaction) => (
-                    <div key={transaction.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                      <div>
-                        <p className="font-medium">{transaction.description}</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                          {transaction.date} • {transaction.category}
-                        </p>
+                {state.transactions.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                    <PieChart className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>Start tracking your finances by adding your first transaction</p>
+                    <Button 
+                      onClick={() => setActiveTab('quick-add')} 
+                      className="mt-4"
+                      variant="outline"
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Transaction
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {state.transactions.slice(0, 5).map((transaction) => (
+                      <div key={transaction.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                        <div>
+                          <p className="font-medium">{transaction.description}</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                            {transaction.date} • {transaction.category}
+                          </p>
+                        </div>
+                        <div className={`font-bold ${transaction.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
+                          {transaction.type === 'income' ? '+' : '-'}
+                          {formatCurrency(Math.abs(convertAmount(transaction.amount, 'USD', selectedCurrency)), selectedCurrency)}
+                        </div>
                       </div>
-                      <div className={`font-bold ${transaction.amount > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                        {transaction.amount > 0 ? '+' : ''}
-                        {formatCurrency(Math.abs(convertAmount(transaction.amount, 'USD', selectedCurrency)), selectedCurrency)}
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -345,7 +396,7 @@ const Dashboard = () => {
             <div className="grid md:grid-cols-2 gap-6">
               <FinancialAnalytics />
               <ReportGenerator 
-                transactions={recentTransactions} 
+                transactions={state.transactions} 
                 currency={selectedCurrency} 
                 formatCurrency={formatCurrencyForReport} 
               />

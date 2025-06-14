@@ -9,6 +9,10 @@ interface UserData {
   address?: string;
   occupation?: string;
   monthly_income?: number;
+  profile_photo?: string;
+  has_cards?: boolean;
+  has_accounts?: boolean;
+  is_onboarded?: boolean;
 }
 
 interface BankData {
@@ -43,6 +47,7 @@ interface AppState {
   transactions: Transaction[];
   currency: string;
   loading: boolean;
+  isNewUser: boolean;
 }
 
 interface AppContextType {
@@ -59,17 +64,19 @@ interface AppContextType {
   deleteTransaction: (id: string) => Promise<void>;
   setCurrency: (currency: string) => Promise<void>;
   refreshData: () => Promise<void>;
+  uploadProfilePhoto: (file: File) => Promise<string>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 const initialState: AppState = {
-  userData: { name: '', email: '' },
+  userData: { name: '', email: '', has_cards: false, has_accounts: false, is_onboarded: false },
   banks: [],
   savingsGoals: [],
   transactions: [],
   currency: 'USD',
-  loading: true
+  loading: true,
+  isNewUser: true
 };
 
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -203,15 +210,25 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         .eq('user_id', user.id)
         .single();
 
+      // Determine if user is new
+      const hasCards = (banks && banks.length > 0) || profile?.has_cards === true;
+      const hasAccounts = (banks && banks.length > 0) || profile?.has_accounts === true;
+      const isOnboarded = profile?.is_onboarded === true;
+      const isNewUser = !isOnboarded || (!hasCards && !hasAccounts && (!transactions || transactions.length === 0));
+
       setState(prev => ({
         ...prev,
         userData: {
           name: profile?.name || '',
-          email: profile?.email || '',
+          email: profile?.email || user.email || '',
           phone: profile?.phone || '',
           address: profile?.address || '',
           occupation: profile?.occupation || '',
-          monthly_income: profile?.monthly_income || 0
+          monthly_income: profile?.monthly_income || 0,
+          profile_photo: profile?.profile_photo || '',
+          has_cards: hasCards,
+          has_accounts: hasAccounts,
+          is_onboarded: isOnboarded
         },
         banks: banks || [],
         savingsGoals: savingsGoals || [],
@@ -220,7 +237,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           type: transaction.type as 'income' | 'expense'
         })),
         currency: settings?.currency || 'USD',
-        loading: false
+        loading: false,
+        isNewUser
       }));
     } catch (error) {
       console.error('Error loading user data:', error);
@@ -242,6 +260,31 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   };
 
+  const uploadProfilePhoto = async (file: File): Promise<string> => {
+    if (!user) throw new Error('User not authenticated');
+
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${user.id}/profile.${fileExt}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('profile-photos')
+      .upload(fileName, file, { upsert: true });
+
+    if (uploadError) {
+      console.error('Error uploading photo:', uploadError);
+      throw uploadError;
+    }
+
+    const { data } = supabase.storage
+      .from('profile-photos')
+      .getPublicUrl(fileName);
+
+    // Update profile with new photo URL
+    await updateUserData({ profile_photo: data.publicUrl });
+
+    return data.publicUrl;
+  };
+
   const addBank = async (data: Omit<BankData, 'id'>) => {
     if (!user) return;
 
@@ -253,6 +296,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       console.error('Error adding bank:', error);
       throw error;
     }
+
+    // Mark user as having accounts
+    await updateUserData({ has_accounts: true });
   };
 
   const updateBank = async (id: string, data: Partial<BankData>) => {
@@ -339,6 +385,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       console.error('Error adding transaction:', error);
       throw error;
     }
+
+    // Mark user as onboarded after first transaction
+    if (state.isNewUser) {
+      await updateUserData({ is_onboarded: true });
+    }
   };
 
   const updateTransaction = async (id: string, updates: Partial<Transaction>) => {
@@ -402,7 +453,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       updateTransaction,
       deleteTransaction,
       setCurrency,
-      refreshData
+      refreshData,
+      uploadProfilePhoto
     }}>
       {children}
     </AppContext.Provider>

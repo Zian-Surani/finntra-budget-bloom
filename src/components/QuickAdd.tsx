@@ -3,276 +3,227 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Plus, Minus, Coffee, Car, ShoppingCart, Home, Heart, Briefcase, Gamepad2, Edit3 } from 'lucide-react';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { TrendingDown, TrendingUp, Receipt, Utensils, Car, Home, ShoppingBag, Gamepad2, Heart, Briefcase, DollarSign, Gift } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useAppContext } from '@/contexts/AppContext';
 
 const QuickAdd = () => {
-  const [amount, setAmount] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('');
-  const [customCategory, setCustomCategory] = useState('');
-  const [showCustomInput, setShowCustomInput] = useState(false);
-  const [transactionType, setTransactionType] = useState<'income' | 'expense'>('expense');
-  const [step, setStep] = useState(1);
+  const { addTransaction } = useAppContext();
   const { toast } = useToast();
+  
+  const [amount, setAmount] = useState('');
+  const [description, setDescription] = useState('');
+  const [category, setCategory] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const categories = [
-    { name: 'Food & Dining', icon: Coffee, color: 'bg-orange-500' },
-    { name: 'Transportation', icon: Car, color: 'bg-blue-500' },
-    { name: 'Shopping', icon: ShoppingCart, color: 'bg-purple-500' },
-    { name: 'Home', icon: Home, color: 'bg-green-500' },
-    { name: 'Healthcare', icon: Heart, color: 'bg-red-500' },
-    { name: 'Work', icon: Briefcase, color: 'bg-gray-500' },
-    { name: 'Entertainment', icon: Gamepad2, color: 'bg-pink-500' }
+  const expenseCategories = [
+    { value: 'Food & Dining', label: 'Food & Dining', icon: Utensils },
+    { value: 'Transportation', label: 'Transportation', icon: Car },
+    { value: 'Housing', label: 'Housing', icon: Home },
+    { value: 'Shopping', label: 'Shopping', icon: ShoppingBag },
+    { value: 'Entertainment', label: 'Entertainment', icon: Gamepad2 },
+    { value: 'Healthcare', label: 'Healthcare', icon: Heart },
+    { value: 'Utilities', label: 'Utilities', icon: Receipt },
+    { value: 'Other', label: 'Other', icon: Receipt }
   ];
 
-  const handleAmountSubmit = () => {
-    if (amount && parseFloat(amount) > 0) {
-      setStep(2);
+  const incomeCategories = [
+    { value: 'Salary', label: 'Salary', icon: Briefcase },
+    { value: 'Freelance', label: 'Freelance', icon: Briefcase },
+    { value: 'Investment', label: 'Investment', icon: DollarSign },
+    { value: 'Gift', label: 'Gift', icon: Gift },
+    { value: 'Bonus', label: 'Bonus', icon: DollarSign },
+    { value: 'Other', label: 'Other', icon: DollarSign }
+  ];
+
+  const handleQuickAdd = async (type: 'income' | 'expense') => {
+    if (!amount || !description || !category) {
+      toast({
+        title: "Missing information",
+        description: "Please fill in all fields before adding the transaction.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const numAmount = parseFloat(amount);
+    if (isNaN(numAmount) || numAmount <= 0) {
+      toast({
+        title: "Invalid amount",
+        description: "Please enter a valid positive amount.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await addTransaction({
+        amount: numAmount,
+        description: description.trim(),
+        category,
+        type,
+        date: new Date().toISOString().split('T')[0]
+      });
+
+      toast({
+        title: "Transaction added",
+        description: `${type === 'income' ? 'Income' : 'Expense'} of $${numAmount.toFixed(2)} has been recorded.`
+      });
+
+      // Reset form
+      setAmount('');
+      setDescription('');
+      setCategory('');
+    } catch (error) {
+      console.error('Error adding transaction:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add transaction. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleCategorySelect = (category: string) => {
-    setSelectedCategory(category);
-    setShowCustomInput(false);
-    setStep(3);
-  };
-
-  const handleCustomCategory = () => {
-    setShowCustomInput(true);
-  };
-
-  const handleCustomCategorySubmit = () => {
-    if (customCategory.trim()) {
-      setSelectedCategory(customCategory);
-      setStep(3);
-    }
-  };
-
-  const handleTypeSelect = (type: 'income' | 'expense') => {
-    setTransactionType(type);
-    setStep(4);
-  };
-
-  const handleSubmit = () => {
-    // Create transaction object
-    const transaction = {
-      id: Date.now(),
-      description: selectedCategory,
-      amount: transactionType === 'income' ? parseFloat(amount) : -parseFloat(amount),
-      category: selectedCategory,
-      date: new Date().toISOString().split('T')[0],
-      type: transactionType
-    };
-
-    // Store in localStorage for demo purposes
-    const existingTransactions = JSON.parse(localStorage.getItem('transactions') || '[]');
-    existingTransactions.unshift(transaction);
-    localStorage.setItem('transactions', JSON.stringify(existingTransactions));
-
-    toast({
-      title: "Transaction Added!",
-      description: `${transactionType === 'income' ? '+' : '-'}$${amount} for ${selectedCategory}`,
-    });
-    
-    // Reset form and redirect to overview
-    setAmount('');
-    setSelectedCategory('');
-    setCustomCategory('');
-    setTransactionType('expense');
-    setStep(1);
-    setShowCustomInput(false);
-    
-    // Redirect to dashboard overview after a brief delay
-    setTimeout(() => {
-      window.location.href = '/dashboard';
-    }, 1500);
-  };
-
-  const getTapIndicator = () => {
-    return (
-      <div className="flex justify-center mb-4">
-        {[1, 2, 3, 4].map((tapNumber) => (
-          <div
-            key={tapNumber}
-            className={`w-3 h-3 rounded-full mx-1 ${
-              step >= tapNumber ? 'bg-blue-500' : 'bg-gray-300'
-            }`}
-          />
-        ))}
-      </div>
-    );
-  };
+  const renderCategoryButtons = (categories: typeof expenseCategories, type: 'income' | 'expense') => (
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      {categories.map((cat) => {
+        const IconComponent = cat.icon;
+        return (
+          <Button
+            key={cat.value}
+            variant={category === cat.value ? "default" : "outline"}
+            className="h-20 flex-col p-3"
+            onClick={() => setCategory(cat.value)}
+          >
+            <IconComponent className="h-6 w-6 mb-2" />
+            <span className="text-xs text-center">{cat.label}</span>
+          </Button>
+        );
+      })}
+    </div>
+  );
 
   return (
-    <Card className="max-w-md mx-auto">
-      <CardHeader>
-        <CardTitle className="text-center">Quick Add - 4 Taps</CardTitle>
-        <CardDescription className="text-center">
-          Add a transaction in just 4 quick taps
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        {getTapIndicator()}
-        
-        {step === 1 && (
-          <div className="space-y-4">
-            <div className="text-center">
-              <h3 className="text-lg font-semibold mb-2">Tap 1: Enter Amount</h3>
-              <Input
-                type="number"
-                placeholder="0.00"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                className="text-center text-2xl font-bold"
-                autoFocus
-              />
-            </div>
-            <Button 
-              onClick={handleAmountSubmit} 
-              className="w-full"
-              disabled={!amount || parseFloat(amount) <= 0}
-            >
-              Next
-            </Button>
-          </div>
-        )}
+    <div className="max-w-4xl mx-auto space-y-6">
+      <Tabs defaultValue="expense" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="expense" className="flex items-center gap-2">
+            <TrendingDown className="h-4 w-4" />
+            Add Expense
+          </TabsTrigger>
+          <TabsTrigger value="income" className="flex items-center gap-2">
+            <TrendingUp className="h-4 w-4" />
+            Add Income
+          </TabsTrigger>
+        </TabsList>
 
-        {step === 2 && (
-          <div className="space-y-4">
-            <div className="text-center">
-              <h3 className="text-lg font-semibold mb-4">Tap 2: Choose Category</h3>
-              {!showCustomInput ? (
-                <>
-                  <div className="grid grid-cols-2 gap-3 mb-4">
-                    {categories.map((category) => {
-                      const IconComponent = category.icon;
-                      return (
-                        <Button
-                          key={category.name}
-                          variant="outline"
-                          onClick={() => handleCategorySelect(category.name)}
-                          className="h-20 flex flex-col items-center justify-center space-y-2 hover:scale-105 transition-transform"
-                        >
-                          <div className={`p-2 rounded-full ${category.color}`}>
-                            <IconComponent className="h-5 w-5 text-white" />
-                          </div>
-                          <span className="text-xs">{category.name}</span>
-                        </Button>
-                      );
-                    })}
-                  </div>
-                  <Button
-                    variant="outline"
-                    onClick={handleCustomCategory}
-                    className="w-full h-16 flex items-center justify-center space-x-2 border-dashed border-2"
-                  >
-                    <Edit3 className="h-5 w-5" />
-                    <span>Custom Category</span>
-                  </Button>
-                </>
-              ) : (
-                <div className="space-y-4">
+        <TabsContent value="expense" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-red-600">
+                <TrendingDown className="h-5 w-5" />
+                Record Expense
+              </CardTitle>
+              <CardDescription>Track your spending quickly and easily</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="expense-amount">Amount</Label>
                   <Input
-                    placeholder="Enter custom category name"
-                    value={customCategory}
-                    onChange={(e) => setCustomCategory(e.target.value)}
-                    autoFocus
+                    id="expense-amount"
+                    type="number"
+                    placeholder="0.00"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    step="0.01"
+                    min="0"
                   />
-                  <div className="flex gap-2">
-                    <Button
-                      onClick={handleCustomCategorySubmit}
-                      disabled={!customCategory.trim()}
-                      className="flex-1"
-                    >
-                      Use Custom
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() => setShowCustomInput(false)}
-                      className="flex-1"
-                    >
-                      Back
-                    </Button>
-                  </div>
                 </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {step === 3 && (
-          <div className="space-y-4">
-            <div className="text-center">
-              <h3 className="text-lg font-semibold mb-4">Tap 3: Income or Expense?</h3>
-              <div className="grid grid-cols-2 gap-4">
-                <Button
-                  onClick={() => handleTypeSelect('expense')}
-                  variant="outline"
-                  className="h-20 flex flex-col items-center justify-center space-y-2 hover:scale-105 transition-transform border-red-300 hover:border-red-500"
-                >
-                  <Minus className="h-8 w-8 text-red-500" />
-                  <span>Expense</span>
-                </Button>
-                <Button
-                  onClick={() => handleTypeSelect('income')}
-                  variant="outline"
-                  className="h-20 flex flex-col items-center justify-center space-y-2 hover:scale-105 transition-transform border-green-300 hover:border-green-500"
-                >
-                  <Plus className="h-8 w-8 text-green-500" />
-                  <span>Income</span>
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {step === 4 && (
-          <div className="space-y-4">
-            <div className="text-center">
-              <h3 className="text-lg font-semibold mb-4">Tap 4: Confirm & Save</h3>
-              <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg mb-4">
-                <div className="flex justify-between items-center">
-                  <span>Amount:</span>
-                  <span className={`font-bold ${transactionType === 'income' ? 'text-green-600' : 'text-red-600'}`}>
-                    {transactionType === 'income' ? '+' : '-'}${amount}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center mt-2">
-                  <span>Category:</span>
-                  <Badge variant="secondary">{selectedCategory}</Badge>
-                </div>
-                <div className="flex justify-between items-center mt-2">
-                  <span>Type:</span>
-                  <Badge variant={transactionType === 'income' ? 'default' : 'destructive'}>
-                    {transactionType}
-                  </Badge>
+                <div className="space-y-2">
+                  <Label htmlFor="expense-description">Description</Label>
+                  <Input
+                    id="expense-description"
+                    placeholder="What did you spend on?"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                  />
                 </div>
               </div>
-              <Button onClick={handleSubmit} className="w-full">
-                Save Transaction
+
+              <div className="space-y-3">
+                <Label>Category</Label>
+                {renderCategoryButtons(expenseCategories, 'expense')}
+              </div>
+
+              <Button 
+                onClick={() => handleQuickAdd('expense')} 
+                className="w-full bg-red-600 hover:bg-red-700"
+                disabled={isLoading}
+              >
+                {isLoading ? 'Adding...' : 'Add Expense'}
               </Button>
-            </div>
-          </div>
-        )}
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-        {step > 1 && (
-          <Button
-            variant="outline"
-            onClick={() => {
-              if (step === 2 && showCustomInput) {
-                setShowCustomInput(false);
-              } else {
-                setStep(step - 1);
-              }
-            }}
-            className="w-full mt-2"
-          >
-            Back
-          </Button>
-        )}
-      </CardContent>
-    </Card>
+        <TabsContent value="income" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-green-600">
+                <TrendingUp className="h-5 w-5" />
+                Record Income
+              </CardTitle>
+              <CardDescription>Track your earnings and income sources</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="income-amount">Amount</Label>
+                  <Input
+                    id="income-amount"
+                    type="number"
+                    placeholder="0.00"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    step="0.01"
+                    min="0"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="income-description">Description</Label>
+                  <Input
+                    id="income-description"
+                    placeholder="Income source"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <Label>Category</Label>
+                {renderCategoryButtons(incomeCategories, 'income')}
+              </div>
+
+              <Button 
+                onClick={() => handleQuickAdd('income')} 
+                className="w-full bg-green-600 hover:bg-green-700"
+                disabled={isLoading}
+              >
+                {isLoading ? 'Adding...' : 'Add Income'}
+              </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
   );
 };
 
