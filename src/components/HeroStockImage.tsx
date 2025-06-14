@@ -11,11 +11,6 @@ const HeroStockImage: React.FC<{
   activeIndex
 }) => {
   const imgSrc = HERO_IMAGES[activeIndex ?? 0] || HERO_IMAGES[0];
-  return <div className="relative h-28 w-28 sm:h-36 sm:w-36 mx-auto flex items-center justify-center bg-[#000a00]">
-      <img src={LOGO_SRC} alt="FinnTra Logo" className="absolute left-0 top-0 h-full w-full opacity-40 blur-[1.5px] z-0 pointer-events-none rounded-full" draggable={false} style={{
-      filter: "blur(1.5px)"
-    }} />
-      
-    </div>;
+  return;
 };
 export default HeroStockImage;
