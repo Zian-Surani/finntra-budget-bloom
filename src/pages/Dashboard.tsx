@@ -15,16 +15,26 @@ import {
   Smartphone,
   BarChart3,
   Settings,
-  Bell
+  Bell,
+  Calculator,
+  FileText,
+  Receipt
 } from 'lucide-react';
 import { ThemeToggle } from "@/components/ThemeToggle";
 import FinancialAnalytics from "@/components/FinancialAnalytics";
 import ImportTransactions from "@/components/ImportTransactions";
 import QuickAdd from "@/components/QuickAdd";
 import BankConnectionManager from "@/components/BankConnectionManager";
+import { CurrencySelector } from "@/components/CurrencySelector";
+import { UserProfileDropdown } from "@/components/UserProfileDropdown";
+import { RealtimeUpdates } from "@/components/RealtimeUpdates";
+import { ReportGenerator } from "@/components/ReportGenerator";
+import { useCurrencyConverter } from "@/hooks/useCurrencyConverter";
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
+  const [hasNewTransaction, setHasNewTransaction] = useState(false);
+  const { formatCurrency } = useCurrencyConverter();
 
   // Mock data for the dashboard
   const stats = [
@@ -65,6 +75,14 @@ const Dashboard = () => {
     { id: 4, description: "Coffee Shop", amount: -12.50, category: "Food", date: "2024-01-14" },
   ];
 
+  const quickActions = [
+    { title: "Quick Expense Report", icon: FileText, action: () => {} },
+    { title: "View Summary", icon: BarChart3, action: () => {} },
+    { title: "Check Balances", icon: Building2, action: () => {} },
+    { title: "Taxes", icon: Calculator, action: () => {} },
+    { title: "Record Income", icon: TrendingUp, action: () => {} }
+  ];
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-blue-100 to-white dark:from-gray-950 dark:via-gray-900 dark:to-slate-950">
       {/* Header */}
@@ -75,6 +93,7 @@ const Dashboard = () => {
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">FinnTra Dashboard</h1>
           </div>
           <div className="flex items-center space-x-4">
+            <CurrencySelector />
             <Button variant="outline" size="sm">
               <Bell className="h-4 w-4" />
             </Button>
@@ -82,6 +101,7 @@ const Dashboard = () => {
               <Settings className="h-4 w-4" />
             </Button>
             <ThemeToggle />
+            <UserProfileDropdown />
             <Button onClick={() => window.location.href = '/'}>
               Back to Home
             </Button>
@@ -90,11 +110,21 @@ const Dashboard = () => {
       </header>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mb-6 text-center">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+            Welcome back, John! 👋
+          </h2>
+          <p className="text-gray-600 dark:text-gray-400">
+            Here's your financial overview for today
+          </p>
+        </div>
+
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-6 lg:w-max">
-            <TabsTrigger value="overview" className="flex items-center gap-2">
+            <TabsTrigger value="overview" className="flex items-center gap-2 relative">
               <BarChart3 className="h-4 w-4" />
               Overview
+              <RealtimeUpdates hasNewUpdate={hasNewTransaction} />
             </TabsTrigger>
             <TabsTrigger value="quick-add" className="flex items-center gap-2">
               <Plus className="h-4 w-4" />
@@ -119,12 +149,38 @@ const Dashboard = () => {
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
+            {/* Quick Actions */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Quick Actions</CardTitle>
+                <CardDescription>Frequently used features</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                  {quickActions.map((action, index) => {
+                    const IconComponent = action.icon;
+                    return (
+                      <Button
+                        key={index}
+                        variant="outline"
+                        className="h-20 flex-col"
+                        onClick={action.action}
+                      >
+                        <IconComponent className="h-6 w-6 mb-2" />
+                        <span className="text-xs text-center">{action.title}</span>
+                      </Button>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {stats.map((stat, index) => {
                 const IconComponent = stat.icon;
                 return (
-                  <Card key={index} className="hover:scale-105 transition-transform">
+                  <Card key={index} className="hover:scale-105 transition-transform relative">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                       <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
                       <IconComponent className={`h-4 w-4 ${stat.color}`} />
@@ -259,7 +315,14 @@ const Dashboard = () => {
               <h2 className="text-2xl font-bold mb-2">Financial Analytics</h2>
               <p className="text-gray-600 dark:text-gray-400">Detailed insights and reports</p>
             </div>
-            <FinancialAnalytics />
+            <div className="grid md:grid-cols-2 gap-6">
+              <FinancialAnalytics />
+              <ReportGenerator 
+                transactions={recentTransactions} 
+                currency="USD" 
+                formatCurrency={formatCurrency} 
+              />
+            </div>
           </TabsContent>
         </Tabs>
       </div>

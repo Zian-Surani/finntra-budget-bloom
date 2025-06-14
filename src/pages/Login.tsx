@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import {
   Card,
@@ -52,7 +53,16 @@ const Login = () => {
 
   const handleSignup = (e: React.FormEvent) => {
     e.preventDefault();
-    window.location.href = "/tutorial"; // Walkthrough after sign up
+    if (signupData.captcha !== "8") {
+      alert("Please solve the captcha correctly");
+      return;
+    }
+    if (signupData.password !== signupData.confirmPassword) {
+      alert("Passwords do not match");
+      return;
+    }
+    // Redirect to dashboard after successful signup
+    window.location.href = "/dashboard";
   };
 
   return (
@@ -98,199 +108,195 @@ const Login = () => {
                   Sign Up
                 </TabsTrigger>
               </TabsList>
-              <div className="relative min-h-[390px] overflow-y-auto">
-                <TabsContent value="login" forceMount>
-                  <form
-                    onSubmit={handleLogin}
-                    className={`space-y-4 transition-all duration-500 ${
-                      activeTab === "login" ? "animate-slide-in-right" : "opacity-0 pointer-events-none"
-                    }`}
+              
+              <TabsContent value="login" className="space-y-4">
+                <form onSubmit={handleLogin} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                      <Input
+                        id="email"
+                        type="email"
+                        placeholder="Enter your email"
+                        value={loginData.email}
+                        onChange={(e) =>
+                          setLoginData({
+                            ...loginData,
+                            email: e.target.value,
+                          })
+                        }
+                        className="pl-10"
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="password">Password</Label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                      <Input
+                        id="password"
+                        type="password"
+                        placeholder="Enter your password"
+                        value={loginData.password}
+                        onChange={(e) =>
+                          setLoginData({
+                            ...loginData,
+                            password: e.target.value,
+                          })
+                        }
+                        className="pl-10"
+                        required
+                      />
+                    </div>
+                  </div>
+                  <Button
+                    type="submit"
+                    className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 relative overflow-hidden ripple-btn hover:scale-105"
+                    onClick={triggerRipple}
                   >
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email</Label>
-                      <div className="relative">
-                        <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                        <Input
-                          id="email"
-                          type="email"
-                          placeholder="Enter your email"
-                          value={loginData.email}
-                          onChange={(e) =>
-                            setLoginData({
-                              ...loginData,
-                              email: e.target.value,
-                            })
-                          }
-                          className="pl-10"
-                          required
-                        />
-                      </div>
+                    {rippleStyle && (
+                      <span
+                        className="ripple"
+                        style={{
+                          ...rippleStyle,
+                        }}
+                      />
+                    )}
+                    Sign In
+                  </Button>
+                </form>
+              </TabsContent>
+
+              <TabsContent value="signup" className="space-y-4">
+                <form onSubmit={handleSignup} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="name">Full Name</Label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                      <Input
+                        id="name"
+                        type="text"
+                        placeholder="Enter your full name"
+                        value={signupData.name}
+                        onChange={(e) =>
+                          setSignupData({
+                            ...signupData,
+                            name: e.target.value,
+                          })
+                        }
+                        className="pl-10"
+                        required
+                        autoComplete="off"
+                      />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="password">Password</Label>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                        <Input
-                          id="password"
-                          type="password"
-                          placeholder="Enter your password"
-                          value={loginData.password}
-                          onChange={(e) =>
-                            setLoginData({
-                              ...loginData,
-                              password: e.target.value,
-                            })
-                          }
-                          className="pl-10"
-                          required
-                        />
-                      </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-email">Email</Label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                      <Input
+                        id="signup-email"
+                        type="email"
+                        placeholder="Enter your email"
+                        value={signupData.email}
+                        onChange={(e) =>
+                          setSignupData({
+                            ...signupData,
+                            email: e.target.value,
+                          })
+                        }
+                        className="pl-10"
+                        required
+                        autoComplete="off"
+                      />
                     </div>
-                    <Button
-                      type="submit"
-                      className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 relative overflow-hidden ripple-btn hover:scale-105"
-                      onClick={triggerRipple}
-                    >
-                      {rippleStyle && (
-                        <span
-                          className="ripple"
-                          style={{
-                            ...rippleStyle,
-                          }}
-                        />
-                      )}
-                      Sign In
-                    </Button>
-                  </form>
-                </TabsContent>
-                <TabsContent value="signup" forceMount>
-                  <form
-                    onSubmit={handleSignup}
-                    className={`space-y-4 transition-all duration-500 absolute w-full top-0 left-0 ${
-                      activeTab === "signup"
-                        ? "animate-slide-in-left"
-                        : "opacity-0 pointer-events-none"
-                    }`}
-                    autoComplete="off"
-                  >
-                    <div className="space-y-2">
-                      <Label htmlFor="name">Full Name</Label>
-                      <div className="relative">
-                        <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                        <Input
-                          id="name"
-                          type="text"
-                          placeholder="Enter your full name"
-                          value={signupData.name}
-                          onChange={(e) =>
-                            setSignupData({
-                              ...signupData,
-                              name: e.target.value,
-                            })
-                          }
-                          className="pl-10"
-                          required
-                          autoComplete="off"
-                        />
-                      </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-password">Password</Label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                      <Input
+                        id="signup-password"
+                        type="password"
+                        placeholder="Create a password"
+                        value={signupData.password}
+                        onChange={(e) =>
+                          setSignupData({
+                            ...signupData,
+                            password: e.target.value,
+                          })
+                        }
+                        className="pl-10"
+                        required
+                        autoComplete="new-password"
+                      />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="signup-email">Email</Label>
-                      <div className="relative">
-                        <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                        <Input
-                          id="signup-email"
-                          type="email"
-                          placeholder="Enter your email"
-                          value={signupData.email}
-                          onChange={(e) =>
-                            setSignupData({
-                              ...signupData,
-                              email: e.target.value,
-                            })
-                          }
-                          className="pl-10"
-                          required
-                          autoComplete="off"
-                        />
-                      </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="confirm-password">Confirm Password</Label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                      <Input
+                        id="confirm-password"
+                        type="password"
+                        placeholder="Confirm your password"
+                        value={signupData.confirmPassword}
+                        onChange={(e) =>
+                          setSignupData({
+                            ...signupData,
+                            confirmPassword: e.target.value,
+                          })
+                        }
+                        className="pl-10"
+                        required
+                        autoComplete="new-password"
+                      />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="signup-password">Password</Label>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                        <Input
-                          id="signup-password"
-                          type="password"
-                          placeholder="Create a password"
-                          value={signupData.password}
-                          onChange={(e) =>
-                            setSignupData({
-                              ...signupData,
-                              password: e.target.value,
-                            })
-                          }
-                          className="pl-10"
-                          required
-                          autoComplete="new-password"
-                        />
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="confirm-password">Confirm Password</Label>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                        <Input
-                          id="confirm-password"
-                          type="password"
-                          placeholder="Confirm your password"
-                          value={signupData.confirmPassword}
-                          onChange={(e) =>
-                            setSignupData({
-                              ...signupData,
-                              confirmPassword: e.target.value,
-                            })
-                          }
-                          className="pl-10"
-                          required
-                          autoComplete="new-password"
-                        />
-                      </div>
-                    </div>
-                    {/* Demo Captcha */}
-                    <div className="space-y-1">
-                      <Label htmlFor="signup-captcha" className="flex items-center gap-1">
-                        <span>Captcha</span>
-                        <span className="inline-block rounded px-2 py-0.5 text-xs text-indigo-700 bg-indigo-100 dark:bg-indigo-800 dark:text-indigo-300 ml-2">
-                          What is 3 + 5?
-                        </span>
-                      </Label>
-                      <Input id="signup-captcha" type="text" placeholder="Your answer" className="pl-10"
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-captcha" className="flex items-center gap-1">
+                      <span>Captcha</span>
+                      <span className="inline-block rounded px-2 py-0.5 text-xs text-indigo-700 bg-indigo-100 dark:bg-indigo-800 dark:text-indigo-300 ml-2">
+                        What is 3 + 5?
+                      </span>
+                    </Label>
+                    <div className="relative">
+                      <Input 
+                        id="signup-captcha" 
+                        type="text" 
+                        placeholder="Your answer" 
+                        className="pl-3"
                         value={signupData.captcha}
                         onChange={e => setSignupData({ ...signupData, captcha: e.target.value })}
-                        required pattern="8" title="Please solve the captcha question." autoComplete="off" />
-                      <span className="text-xs text-muted-foreground block mt-0.5">
-                        Please solve the math to continue (demo only).
-                      </span>
+                        required 
+                        pattern="8" 
+                        title="Please solve the captcha question." 
+                        autoComplete="off" 
+                      />
                     </div>
-                    <Button
-                      type="submit"
-                      className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 relative overflow-hidden ripple-btn hover:scale-105"
-                      onClick={triggerRipple}
-                    >
-                      {rippleStyle && (
-                        <span
-                          className="ripple"
-                          style={{
-                            ...rippleStyle,
-                          }}
-                        />
-                      )}
-                      Create Account
-                    </Button>
-                  </form>
-                </TabsContent>
-              </div>
+                    <span className="text-xs text-muted-foreground block mt-0.5">
+                      Please solve the math to continue (demo only).
+                    </span>
+                  </div>
+                  <Button
+                    type="submit"
+                    className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 relative overflow-hidden ripple-btn hover:scale-105"
+                    onClick={triggerRipple}
+                  >
+                    {rippleStyle && (
+                      <span
+                        className="ripple"
+                        style={{
+                          ...rippleStyle,
+                        }}
+                      />
+                    )}
+                    Create Account
+                  </Button>
+                </form>
+              </TabsContent>
             </Tabs>
           </CardContent>
         </Card>
