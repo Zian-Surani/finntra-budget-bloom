@@ -64,6 +64,9 @@ const Landing = () => {
               <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700" onClick={() => window.location.href = '/login'}>
                 Get Started
               </Button>
+              <Button variant="secondary" onClick={() => window.location.href = '/ai-chat'}>
+                AI Assistant
+              </Button>
             </div>
           </div>
         </div>

@@ -10,6 +10,7 @@ import NotFound from "./pages/NotFound";
 import DashboardUser from "./pages/DashboardUser";
 import DashboardAdmin from "./pages/DashboardAdmin";
 import DashboardDeveloper from "./pages/DashboardDeveloper";
+import AiChat from "./pages/AiChat";
 
 const queryClient = new QueryClient();
 
@@ -26,6 +27,7 @@ const App = () => (
           <Route path="/dashboard/user" element={<DashboardUser />} />
           <Route path="/dashboard/admin" element={<DashboardAdmin />} />
           <Route path="/dashboard/developer" element={<DashboardDeveloper />} />
+          <Route path="/ai-chat" element={<AiChat />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
