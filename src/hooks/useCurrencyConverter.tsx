@@ -9,7 +9,8 @@ const exchangeRates: Record<string, number> = {
   'JPY': 149.50
 };
 
-export const useCurrencyConverter = (baseCurrency: string = 'USD') => {
+export const useCurrencyConverter = () => {
+  const [selectedCurrency, setSelectedCurrency] = useState('USD');
   const [rates, setRates] = useState(exchangeRates);
 
   const convertAmount = (amount: number, fromCurrency: string, toCurrency: string): number => {
@@ -20,7 +21,7 @@ export const useCurrencyConverter = (baseCurrency: string = 'USD') => {
     return usdAmount * rates[toCurrency];
   };
 
-  const formatCurrency = (amount: number, currency: string): string => {
+  const formatCurrency = (amount: number, currency: string = selectedCurrency): string => {
     const symbols = {
       'USD': '$',
       'INR': '₹',
@@ -29,10 +30,11 @@ export const useCurrencyConverter = (baseCurrency: string = 'USD') => {
       'JPY': '¥'
     };
     
-    return `${symbols[currency as keyof typeof symbols]}${amount.toLocaleString()}`;
+    const convertedAmount = convertAmount(amount, 'USD', currency);
+    return `${symbols[currency as keyof typeof symbols]}${convertedAmount.toLocaleString()}`;
   };
 
-  // Simulate real-time updates (in a real app, you'd fetch from an API)
+  // Simulate real-time updates
   useEffect(() => {
     const interval = setInterval(() => {
       setRates(prev => ({
@@ -42,10 +44,16 @@ export const useCurrencyConverter = (baseCurrency: string = 'USD') => {
         GBP: prev.GBP + (Math.random() - 0.5) * 0.001,
         JPY: prev.JPY + (Math.random() - 0.5) * 0.1
       }));
-    }, 30000); // Update every 30 seconds
+    }, 30000);
 
     return () => clearInterval(interval);
   }, []);
 
-  return { convertAmount, formatCurrency, rates };
+  return { 
+    convertAmount, 
+    formatCurrency, 
+    rates, 
+    selectedCurrency, 
+    setSelectedCurrency 
+  };
 };

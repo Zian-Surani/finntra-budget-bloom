@@ -1,5 +1,4 @@
 
-import { useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useCurrencyConverter } from '@/hooks/useCurrencyConverter';
 
@@ -12,8 +11,7 @@ const currencies = [
 ];
 
 export const CurrencySelector = () => {
-  const [selectedCurrency, setSelectedCurrency] = useState('USD');
-  const { convertAmount, formatCurrency } = useCurrencyConverter();
+  const { selectedCurrency, setSelectedCurrency } = useCurrencyConverter();
 
   return (
     <div className="flex items-center space-x-2">

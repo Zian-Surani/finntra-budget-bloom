@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -76,15 +75,20 @@ const Dashboard = () => {
   ];
 
   const quickActions = [
-    { title: "Quick Expense Report", icon: FileText, action: () => {} },
-    { title: "View Summary", icon: BarChart3, action: () => {} },
-    { title: "Check Balances", icon: Building2, action: () => {} },
-    { title: "Taxes", icon: Calculator, action: () => {} },
-    { title: "Record Income", icon: TrendingUp, action: () => {} }
+    { title: "Quick Expense Report", icon: FileText, action: () => window.location.href = '/expense-report' },
+    { title: "View Summary", icon: BarChart3, action: () => window.location.href = '/dashboard/user' },
+    { title: "Check Balances", icon: Building2, action: () => window.location.href = '/bank-connections' },
+    { title: "Taxes", icon: Calculator, action: () => window.location.href = '/tax-calculator' },
+    { title: "Record Income", icon: TrendingUp, action: () => window.location.href = '/add-entries' }
   ];
 
   // Create a wrapper function that matches the expected signature
   const formatCurrencyForReport = (amount: number) => formatCurrency(amount, 'USD');
+
+  const handleLogout = () => {
+    // In a real app, this would clear the session
+    window.location.href = '/';
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-blue-100 to-white dark:from-gray-950 dark:via-gray-900 dark:to-slate-950">
@@ -100,13 +104,13 @@ const Dashboard = () => {
             <Button variant="outline" size="sm">
               <Bell className="h-4 w-4" />
             </Button>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" onClick={() => window.location.href = '/settings'}>
               <Settings className="h-4 w-4" />
             </Button>
             <ThemeToggle />
             <UserProfileDropdown />
-            <Button onClick={() => window.location.href = '/'}>
-              Back to Home
+            <Button onClick={handleLogout} variant="outline">
+              Logout
             </Button>
           </div>
         </div>
@@ -115,7 +119,7 @@ const Dashboard = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-6 text-center">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-            Welcome back, John! 👋
+            Welcome back! 👋
           </h2>
           <p className="text-gray-600 dark:text-gray-400">
             Here's your financial overview for today

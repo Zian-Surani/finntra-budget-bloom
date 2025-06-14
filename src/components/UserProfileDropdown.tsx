@@ -28,30 +28,30 @@ export const UserProfileDropdown = () => {
         <DropdownMenuContent className="w-56" align="end" forceMount>
           <div className="flex items-center justify-start gap-2 p-2">
             <div className="flex flex-col space-y-1 leading-none">
-              <p className="font-medium">Welcome, John Doe</p>
+              <p className="font-medium">Welcome!</p>
               <p className="w-[200px] truncate text-sm text-muted-foreground">
-                john.doe@example.com
+                user@example.com
               </p>
             </div>
           </div>
           <DropdownMenuSeparator />
-          <DropdownMenuItem>
+          <DropdownMenuItem onClick={() => window.location.href = '/bank-connections'}>
             <CreditCard className="mr-2 h-4 w-4" />
             <span>Cards</span>
           </DropdownMenuItem>
-          <DropdownMenuItem>
+          <DropdownMenuItem onClick={() => window.location.href = '/bank-connections'}>
             <Building2 className="mr-2 h-4 w-4" />
             <span>Accounts</span>
           </DropdownMenuItem>
-          <DropdownMenuItem>
+          <DropdownMenuItem onClick={() => window.location.href = '/dashboard/user'}>
             <User className="mr-2 h-4 w-4" />
             <span>User Dashboard</span>
           </DropdownMenuItem>
-          <DropdownMenuItem>
+          <DropdownMenuItem onClick={() => window.location.href = '/dashboard/user'}>
             <PieChart className="mr-2 h-4 w-4" />
             <span>Savings</span>
           </DropdownMenuItem>
-          <DropdownMenuItem>
+          <DropdownMenuItem onClick={() => window.location.href = '/expense-report'}>
             <FileText className="mr-2 h-4 w-4" />
             <span>Export Report to PDF</span>
           </DropdownMenuItem>
@@ -61,7 +61,7 @@ export const UserProfileDropdown = () => {
             <span>Income Management Chat</span>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem>
+          <DropdownMenuItem onClick={() => window.location.href = '/'}>
             <LogOut className="mr-2 h-4 w-4" />
             <span>Log out</span>
           </DropdownMenuItem>
