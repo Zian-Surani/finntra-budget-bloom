@@ -189,18 +189,18 @@ const Landing = () => {
               <div className="border-t pt-6 mt-6">
                 <h5 className="text-lg font-semibold text-gray-900 mb-4 text-center">Get in Touch</h5>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="flex items-center justify-center space-x-2 p-3 bg-black rounded-lg hover:scale-105 cursor-pointer transition-transform">
+                  <a href="mailto:zian.surani@gmail.com" className="flex items-center justify-center space-x-2 p-3 bg-black rounded-lg hover:scale-105 cursor-pointer transition-transform">
                     <Mail className="h-5 w-5 text-white" />
-                    <span className="text-sm text-white">dev@finntra.com</span>
-                  </div>
-                  <div className="flex items-center justify-center space-x-2 p-3 bg-black rounded-lg hover:scale-105 cursor-pointer transition-transform">
+                    <span className="text-sm text-white">zian.surani@gmail.com</span>
+                  </a>
+                  <a href="https://github.com/Zian-Surani" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center space-x-2 p-3 bg-black rounded-lg hover:scale-105 cursor-pointer transition-transform">
                     <Github className="h-5 w-5 text-white" />
-                    <span className="text-sm text-white">github.com/finntra</span>
-                  </div>
-                  <div className="flex items-center justify-center space-x-2 p-3 bg-black rounded-lg hover:scale-105 cursor-pointer transition-transform">
+                    <span className="text-sm text-white">github.com/Zian-Surani</span>
+                  </a>
+                  <a href="https://www.linkedin.com/in/zian-rajeshkumar-surani-125215195" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center space-x-2 p-3 bg-black rounded-lg hover:scale-105 cursor-pointer transition-transform">
                     <Linkedin className="h-5 w-5 text-white" />
-                    <span className="text-sm text-white">linkedin.com/finntra</span>
-                  </div>
+                    <span className="text-sm text-white">linkedin.com/in/zian-rajeshkumar-surani-125215195</span>
+                  </a>
                 </div>
               </div>
             </CardContent>
