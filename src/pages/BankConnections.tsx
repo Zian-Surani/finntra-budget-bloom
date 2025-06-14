@@ -76,7 +76,11 @@ const BankConnections = () => {
           </div>
           
           <div className="mb-12">
-            <img src="/lovable-uploads/7df32f9b-320d-44c0-a6e4-bdb6b8871ffa.png" alt="Bank connections interface" className="rounded-xl shadow-2xl mx-auto max-w-2xl w-full" />
+            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-12 rounded-xl shadow-2xl mx-auto max-w-2xl">
+              <Building2 className="h-32 w-32 text-white mx-auto mb-4" />
+              <h3 className="text-2xl font-bold text-white mb-2">Secure Bank Integration</h3>
+              <p className="text-blue-100">Connect your accounts with bank-level security and encryption</p>
+            </div>
           </div>
         </div>
       </section>

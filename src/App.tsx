@@ -4,6 +4,8 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Suspense } from "react";
+import { MessageLoading } from "@/components/ui/message-loading";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
@@ -24,19 +26,21 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Landing />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/dashboard/user" element={<DashboardUser />} />
-          <Route path="/dashboard/admin" element={<DashboardAdmin />} />
-          <Route path="/dashboard/developer" element={<DashboardDeveloper />} />
-          <Route path="/ai-chat" element={<AiChat />} />
-          <Route path="/bank-connections" element={<BankConnections />} />
-          <Route path="/add-entries" element={<AddEntries />} />
-          <Route path="/import-files" element={<ImportFiles />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <Suspense fallback={<MessageLoading />}>
+          <Routes>
+            <Route path="/" element={<Landing />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/dashboard/user" element={<DashboardUser />} />
+            <Route path="/dashboard/admin" element={<DashboardAdmin />} />
+            <Route path="/dashboard/developer" element={<DashboardDeveloper />} />
+            <Route path="/ai-chat" element={<AiChat />} />
+            <Route path="/bank-connections" element={<BankConnections />} />
+            <Route path="/add-entries" element={<AddEntries />} />
+            <Route path="/import-files" element={<ImportFiles />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Suspense>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

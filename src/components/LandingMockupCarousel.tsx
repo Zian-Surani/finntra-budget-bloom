@@ -2,7 +2,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { HERO_IMAGES } from "./HeroStockImage";
-const AUTO_SCROLL_INTERVAL = 2500; // ms
+const AUTO_SCROLL_INTERVAL = 3500; // ms - slightly longer for smoother experience
 
 interface CarouselProps {
   onSlideChange?: (index: number) => void;
@@ -14,6 +14,7 @@ const LandingMockupCarousel: React.FC<CarouselProps> = ({
   const [activeIndex, setActiveIndex] = useState(0);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const mockupCount = HERO_IMAGES.length;
+  
   useEffect(() => {
     if (intervalRef.current) clearInterval(intervalRef.current);
     intervalRef.current = setInterval(() => {
@@ -39,21 +40,24 @@ const LandingMockupCarousel: React.FC<CarouselProps> = ({
       <Carousel>
         <CarouselContent>
           {HERO_IMAGES.map((imgObj, i) => (
-            <CarouselItem key={i} className={i === activeIndex ? "" : "opacity-50"}>
+            <CarouselItem key={i} className={`transition-all duration-1000 ease-in-out ${i === activeIndex ? "opacity-100 scale-100" : "opacity-40 scale-95"}`}>
               <img
                 src={imgObj.img}
                 alt={imgObj.text}
-                className="rounded-xl w-full max-w-md mx-auto object-cover h-48 transition-all duration-500"
+                className="rounded-xl w-full max-w-md mx-auto object-cover h-48 transition-all duration-1000 ease-in-out transform hover:scale-105"
                 draggable={false}
-                style={{ opacity: i === activeIndex ? 1 : 0.6 }}
+                style={{ 
+                  filter: i === activeIndex ? 'brightness(1.1) contrast(1.05)' : 'brightness(0.8) contrast(0.9)',
+                }}
               />
             </CarouselItem>
           ))}
         </CarouselContent>
-        <CarouselPrevious />
-        <CarouselNext />
+        <CarouselPrevious className="transition-all duration-300 hover:scale-110" />
+        <CarouselNext className="transition-all duration-300 hover:scale-110" />
       </Carousel>
     </div>
   );
 };
+
 export default LandingMockupCarousel;
