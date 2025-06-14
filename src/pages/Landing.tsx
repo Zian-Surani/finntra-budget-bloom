@@ -149,7 +149,7 @@ const Landing = () => {
               </div>
               <h4 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">Bank connections</h4>
               <p className="text-gray-600 dark:text-gray-300 mb-4">12379 bank & financial service connections worldwide</p>
-              <Button variant="outline" className="w-full hover:scale-105 transition-transform duration-200" onClick={() => window.location.href = '/bank-connections'}>Learn more: Bank connections</Button>
+              <Button variant="outline" className="w-full hover:scale-105 transition-transform duration-200" onClick={() => window.location.href = '/bank-connections'}>Learn more</Button>
             </div>
 
             {/* Add in the app */}
@@ -159,7 +159,7 @@ const Landing = () => {
               </div>
               <h4 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">Add in the app</h4>
               <p className="text-gray-600 dark:text-gray-300 mb-4">4 quick taps to add an expense or income</p>
-              <Button variant="outline" className="w-full hover:scale-105 transition-transform duration-200" onClick={() => window.location.href = '/add-entries'}>Learn more: Adding entries</Button>
+              <Button variant="outline" onClick={() => window.location.href = '/add-entries'} className="w-full hover:scale-105 transition-transform duration-200 text-center">Learn more</Button>
             </div>
 
             {/* Import from file */}
@@ -169,7 +169,7 @@ const Landing = () => {
               </div>
               <h4 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">Import from file</h4>
               <p className="text-gray-600 dark:text-gray-300 mb-4">8 file import formats supported in the web app</p>
-              <Button variant="outline" className="w-full hover:scale-105 transition-transform duration-200" onClick={() => window.location.href = '/import-files'}>Learn more: Importing</Button>
+              <Button variant="outline" className="w-full hover:scale-105 transition-transform duration-200" onClick={() => window.location.href = '/import-files'}>Learn more</Button>
             </div>
           </div>
         </div>
