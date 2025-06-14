@@ -28,17 +28,17 @@ const App = () => (
       <BrowserRouter>
         <Suspense fallback={<MessageLoading />}>
           <Routes>
-            <Route path="/" element={<Landing />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/dashboard/user" element={<DashboardUser />} />
-            <Route path="/dashboard/admin" element={<DashboardAdmin />} />
-            <Route path="/dashboard/developer" element={<DashboardDeveloper />} />
-            <Route path="/ai-chat" element={<AiChat />} />
-            <Route path="/bank-connections" element={<BankConnections />} />
-            <Route path="/add-entries" element={<AddEntries />} />
-            <Route path="/import-files" element={<ImportFiles />} />
-            <Route path="*" element={<NotFound />} />
+            <Route path="/" element={<Suspense fallback={<MessageLoading />}><Landing /></Suspense>} />
+            <Route path="/login" element={<Suspense fallback={<MessageLoading />}><Login /></Suspense>} />
+            <Route path="/dashboard" element={<Suspense fallback={<MessageLoading />}><Dashboard /></Suspense>} />
+            <Route path="/dashboard/user" element={<Suspense fallback={<MessageLoading />}><DashboardUser /></Suspense>} />
+            <Route path="/dashboard/admin" element={<Suspense fallback={<MessageLoading />}><DashboardAdmin /></Suspense>} />
+            <Route path="/dashboard/developer" element={<Suspense fallback={<MessageLoading />}><DashboardDeveloper /></Suspense>} />
+            <Route path="/ai-chat" element={<Suspense fallback={<MessageLoading />}><AiChat /></Suspense>} />
+            <Route path="/bank-connections" element={<Suspense fallback={<MessageLoading />}><BankConnections /></Suspense>} />
+            <Route path="/add-entries" element={<Suspense fallback={<MessageLoading />}><AddEntries /></Suspense>} />
+            <Route path="/import-files" element={<Suspense fallback={<MessageLoading />}><ImportFiles /></Suspense>} />
+            <Route path="*" element={<Suspense fallback={<MessageLoading />}><NotFound /></Suspense>} />
           </Routes>
         </Suspense>
       </BrowserRouter>

@@ -144,8 +144,8 @@ const Landing = () => {
           <div className="grid md:grid-cols-3 gap-8">
             {/* Bank Connections */}
             <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl p-8 text-center hover:scale-105 transition-transform">
-              <div className="mb-6">
-                
+              <div className="mb-6 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-lg p-6 flex items-center justify-center">
+                <Building2 className="w-24 h-24 text-white" />
               </div>
               <h4 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">Bank connections</h4>
               <p className="text-gray-600 dark:text-gray-300 mb-4">12379 bank & financial service connections worldwide</p>
@@ -165,7 +165,7 @@ const Landing = () => {
             {/* Import from file */}
             <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl p-8 text-center hover:scale-105 transition-transform">
               <div className="mb-6 bg-gradient-to-br from-green-400 to-blue-500 rounded-lg p-6 flex items-center justify-center">
-                <DollarSign className="w-24 h-24 text-white" />
+                <Upload className="w-24 h-24 text-white" />
               </div>
               <h4 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">Import from file</h4>
               <p className="text-gray-600 dark:text-gray-300 mb-4">8 file import formats supported in the web app</p>
