@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { DollarSign, TrendingUp, PieChart, CreditCard, Shield, Smartphone, Github, Linkedin, Mail, Phone } from 'lucide-react';
 import { ThemeToggle } from "@/components/ThemeToggle";
 import LandingMockupCarousel from "@/components/LandingMockupCarousel";
-import HeroStockImage from "@/components/HeroStockImage";
+import HeroStockImage, { HERO_IMAGES, HERO_LOGO_SRC } from "@/components/HeroStockImage";
 import { useState } from "react";
 const featureBubbles = [{
   text: "Automatic Sync",
@@ -57,13 +57,14 @@ const Landing = () => {
   const handleLogoClick = () => {
     window.location.href = '/';
   };
+  // Center logo above hero
   return <div className="relative min-h-screen font-sans overflow-x-hidden bg-gradient-to-br from-indigo-50 via-blue-100 to-white dark:from-gray-950 dark:via-gray-900 dark:to-slate-950 transition-colors duration-700">
       {bgGradients}
       {/* Header */}
       <header className="bg-white shadow-sm border-b dark:bg-gray-900 dark:border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-3 cursor-pointer" onClick={handleLogoClick}>
-            <img src="/lovable-uploads/62637124-2993-4040-a176-d1e9ed77f87d.png" alt="FinnTra Logo" className="h-10 w-10" />
+            <img src={HERO_LOGO_SRC} alt="FinnTra Logo" className="h-10 w-10" />
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">FinnTra</h1>
           </div>
           <div className="flex space-x-2 items-center">
@@ -84,8 +85,19 @@ const Landing = () => {
       {/* Hero section with carousel-synced stock image */}
       <section className="relative py-24 sm:py-32 flex flex-col items-center z-10 animate-fade-in">
         <div className="max-w-5xl mx-auto px-4 flex flex-col items-center text-center gap-4">
+          {/* Logo centered above hero image and headline */}
+          <img
+            src={HERO_LOGO_SRC}
+            alt="FinnTra Logo"
+            className="h-16 w-16 rounded-full mb-4 shadow-lg object-cover bg-white/90 z-20"
+            style={{ border: "2px solid #d2e4fa"}}
+          />
           <div className="relative flex items-center justify-center w-full">
             <HeroStockImage activeIndex={carouselIndex} />
+          </div>
+          {/* Text that changes with the hero image */}
+          <div className="text-lg sm:text-xl font-medium text-blue-900 dark:text-blue-100 mb-2 min-h-7 transition-all animate-fade-in" key={`hero-text-${carouselIndex}`}>
+            {HERO_IMAGES[carouselIndex % HERO_IMAGES.length].text}
           </div>
           <h1 className="text-5xl sm:text-6xl font-extrabold text-gray-800 dark:text-white mb-3 leading-tight tracking-tight animate-fade-in">
             Your finances, <span className="bg-gradient-to-r from-indigo-600 to-blue-500 bg-clip-text text-transparent">happy</span> and under control
@@ -117,10 +129,7 @@ const Landing = () => {
             </Button>
           </div>
         </div>
-        {/* Playful circle illustration */}
-        <div className="absolute left-1/2 -translate-x-1/2 top-[88%] pointer-events-none z-0">
-          <div className="h-12 w-40 bg-gradient-to-br from-indigo-200 via-fuchsia-200 to-amber-100 rounded-full blur-2xl opacity-80"></div>
-        </div>
+        {/* Playful circle illustration (removed by user request) */}
       </section>
       {/* Professional auto-advance carousel with image sync */}
       <section className="relative py-10 z-10 animate-fade-in">
