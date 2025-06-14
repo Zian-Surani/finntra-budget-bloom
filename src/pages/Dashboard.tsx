@@ -83,6 +83,9 @@ const Dashboard = () => {
     { title: "Record Income", icon: TrendingUp, action: () => {} }
   ];
 
+  // Create a wrapper function that matches the expected signature
+  const formatCurrencyForReport = (amount: number) => formatCurrency(amount, 'USD');
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-blue-100 to-white dark:from-gray-950 dark:via-gray-900 dark:to-slate-950">
       {/* Header */}
@@ -320,7 +323,7 @@ const Dashboard = () => {
               <ReportGenerator 
                 transactions={recentTransactions} 
                 currency="USD" 
-                formatCurrency={formatCurrency} 
+                formatCurrency={formatCurrencyForReport} 
               />
             </div>
           </TabsContent>
