@@ -3,9 +3,10 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { DollarSign, TrendingUp, PieChart, CreditCard, Shield, Smartphone, Github, Linkedin, Mail, Phone, Building2, Upload } from 'lucide-react';
 import { ThemeToggle } from "@/components/ThemeToggle";
-import LandingMockupCarousel from "@/components/LandingMockupCarousel";
+import InteractiveFeatureShowcase from "@/components/InteractiveFeatureShowcase";
 import HeroStockImage, { HERO_IMAGES, HERO_LOGO_SRC } from "@/components/HeroStockImage";
 import { useState } from "react";
+
 const featureBubbles = [{
   text: "Automatic Sync",
   emoji: "🔗"
@@ -57,6 +58,11 @@ const Landing = () => {
   const handleLogoClick = () => {
     window.location.href = '/';
   };
+
+  const redirectToAuth = () => {
+    window.location.href = '/login';
+  };
+
   return <div className="relative min-h-screen font-sans overflow-x-hidden bg-gradient-to-br from-indigo-50 via-blue-100 to-white dark:from-gray-950 dark:via-gray-900 dark:to-slate-950 transition-colors duration-700">
       {bgGradients}
       {/* Header */}
@@ -68,10 +74,10 @@ const Landing = () => {
           </div>
           <div className="flex space-x-2 items-center">
             <ThemeToggle />
-            <Button variant="outline" className="hover:scale-110 transition-transform duration-200" onClick={() => window.location.href = '/login'}>
+            <Button variant="outline" className="hover:scale-110 transition-transform duration-200" onClick={redirectToAuth}>
               Sign In
             </Button>
-            <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 hover:scale-110 transition-transform duration-200" onClick={() => window.location.href = '/login'}>
+            <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 hover:scale-110 transition-transform duration-200" onClick={redirectToAuth}>
               Get Started
             </Button>
             <Button variant="secondary" className="hover:scale-110 transition-transform duration-200" onClick={() => window.location.href = '/ai-chat'}>
@@ -81,7 +87,7 @@ const Landing = () => {
         </div>
       </header>
 
-      {/* Hero section with carousel-synced stock image */}
+      {/* Hero section */}
       <section className="relative py-24 sm:py-32 flex flex-col items-center z-10 animate-fade-in">
         <div className="max-w-5xl mx-auto px-4 flex flex-col items-center text-center gap-6">
           {/* Large FinnTra branding above headline */}
@@ -115,25 +121,20 @@ const Landing = () => {
               </span>)}
           </div>
           <div className="flex justify-center space-x-4 mt-6 animate-fade-in delay-200">
-            <Button size="lg" className="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-blue-700 hover:to-indigo-700 hover:scale-110 active:scale-95 drop-shadow-xl shadow-blue-300 smooth-btn transition-transform duration-200" onClick={e => {
-            e.currentTarget.classList.add("btn-pressed");
-            setTimeout(() => e.currentTarget.classList.remove("btn-pressed"), 240);
-            window.location.href = '/login';
-          }}>
+            <Button size="lg" className="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-blue-700 hover:to-indigo-700 hover:scale-110 active:scale-95 drop-shadow-xl shadow-blue-300 smooth-btn transition-transform duration-200" onClick={redirectToAuth}>
               Get Started Free
             </Button>
-            <Button size="lg" variant="outline" className="hover:scale-110 active:scale-95 bg-white/50 dark:bg-slate-800/70 border-2 border-indigo-300 dark:border-indigo-700 shadow smooth-btn transition-transform duration-200" onClick={e => {
-            e.currentTarget.classList.add("btn-pressed");
-            setTimeout(() => e.currentTarget.classList.remove("btn-pressed"), 240);
-            window.location.href = '/dashboard';
-          }}>
+            <Button size="lg" variant="outline" className="hover:scale-110 active:scale-95 bg-white/50 dark:bg-slate-800/70 border-2 border-indigo-300 dark:border-indigo-700 shadow smooth-btn transition-transform duration-200" onClick={redirectToAuth}>
               Try Demo
             </Button>
           </div>
         </div>
       </section>
 
-      {/* Mockup carousel similar to Toshl.com */}
+      {/* Interactive Feature Showcase - replaces the old carousel */}
+      <InteractiveFeatureShowcase />
+
+      {/* Three Ways to Track Section */}
       <section className="py-16 bg-gradient-to-r from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
@@ -149,7 +150,7 @@ const Landing = () => {
               </div>
               <h4 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">Bank connections</h4>
               <p className="text-gray-600 dark:text-gray-300 mb-4">12379 bank & financial service connections worldwide</p>
-              <Button variant="outline" className="w-full hover:scale-105 transition-transform duration-200" onClick={() => window.location.href = '/bank-connections'}>Learn more</Button>
+              <Button variant="outline" className="w-full hover:scale-105 transition-transform duration-200" onClick={redirectToAuth}>Connect Your Bank</Button>
             </div>
 
             {/* Add in the app */}
@@ -159,7 +160,7 @@ const Landing = () => {
               </div>
               <h4 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">Add in the app</h4>
               <p className="text-gray-600 dark:text-gray-300 mb-4">4 quick taps to add an expense or income</p>
-              <Button variant="outline" onClick={() => window.location.href = '/add-entries'} className="w-full hover:scale-105 transition-transform duration-200 text-center">Learn more</Button>
+              <Button variant="outline" onClick={redirectToAuth} className="w-full hover:scale-105 transition-transform duration-200 text-center">Get Started Free</Button>
             </div>
 
             {/* Import from file */}
@@ -169,55 +170,52 @@ const Landing = () => {
               </div>
               <h4 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">Import from file</h4>
               <p className="text-gray-600 dark:text-gray-300 mb-4">8 file import formats supported in the web app</p>
-              <Button variant="outline" className="w-full hover:scale-105 transition-transform duration-200" onClick={() => window.location.href = '/import-files'}>Learn more</Button>
+              <Button variant="outline" className="w-full hover:scale-105 transition-transform duration-200" onClick={redirectToAuth}>Start Importing</Button>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Auto-advance carousel */}
-      
-
       {/* Features Section */}
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-white dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16 animate-fade-in">
-            <h3 className="text-3xl font-bold text-gray-900 mb-4">Why Choose FinnTra?</h3>
-            <p className="text-lg text-gray-600">Powerful features to help you master your finances</p>
+            <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Why Choose FinnTra?</h3>
+            <p className="text-lg text-gray-600 dark:text-gray-300">Powerful features to help you master your finances</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {features.map((feature, index) => <Card key={index} className="shadow-lg border-0 hover:scale-105 transition-transform hover:shadow-xl">
+            {features.map((feature, index) => <Card key={index} className="shadow-lg border-0 hover:scale-105 transition-transform hover:shadow-xl dark:bg-gray-800">
                 <CardHeader>
                   <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-3 rounded-lg w-fit">
                     <feature.icon className="h-6 w-6 text-white" />
                   </div>
-                  <CardTitle className="text-xl">{feature.title}</CardTitle>
+                  <CardTitle className="text-xl dark:text-white">{feature.title}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <CardDescription className="text-gray-600">{feature.description}</CardDescription>
+                  <CardDescription className="text-gray-600 dark:text-gray-300">{feature.description}</CardDescription>
                 </CardContent>
               </Card>)}
           </div>
         </div>
       </section>
 
-      {/* Developer Section (dark contact boxes) */}
-      <section className="py-20 bg-gradient-to-r from-gray-50 to-blue-50">
+      {/* Developer Section */}
+      <section className="py-20 bg-gradient-to-r from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 animate-fade-in">
-            <h3 className="text-3xl font-bold text-gray-900 mb-4">Meet the Developer</h3>
-            <p className="text-lg text-gray-600">Built with passion for financial empowerment</p>
+            <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Meet the Developer</h3>
+            <p className="text-lg text-gray-600 dark:text-gray-300">Built with passion for financial empowerment</p>
           </div>
           
-          <Card className="shadow-xl border-0">
+          <Card className="shadow-xl border-0 dark:bg-gray-800">
             <CardContent className="p-8">
               <div className="flex flex-col md:flex-row items-center space-y-6 md:space-y-0 md:space-x-8">
                 <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-6 rounded-full">
                   <DollarSign className="h-16 w-16 text-white" />
                 </div>
                 <div className="flex-1 text-center md:text-left">
-                  <h4 className="text-2xl font-bold text-gray-900 mb-2">FinnTra Development Team</h4>
-                  <p className="text-gray-600 mb-4">
+                  <h4 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">FinnTra Development Team</h4>
+                  <p className="text-gray-600 dark:text-gray-300 mb-4">
                     Passionate about creating tools that help people achieve financial freedom. 
                     FinnTra is built with modern web technologies to provide a seamless, 
                     secure, and intuitive finance tracking experience.
@@ -234,7 +232,7 @@ const Landing = () => {
               
               {/* Contact Information */}
               <div className="border-t pt-6 mt-6">
-                <h5 className="text-lg font-semibold text-gray-900 mb-4 text-center">Get in Touch</h5>
+                <h5 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 text-center">Get in Touch</h5>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <a href="mailto:zian.surani@gmail.com" className="flex items-center justify-center space-x-2 p-3 bg-black rounded-lg hover:scale-105 cursor-pointer transition-transform">
                     <Mail className="h-5 w-5 text-white" />
@@ -252,29 +250,6 @@ const Landing = () => {
               </div>
             </CardContent>
           </Card>
-        </div>
-      </section>
-
-      {/* Mockups Section */}
-      <section className="py-12 bg-gradient-to-r from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 animate-fade-in">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="p-6 bg-white dark:bg-gray-900 rounded-2xl shadow-lg flex flex-col items-center text-center animate-scale-in transition-all">
-              <Smartphone className="w-12 h-12 mb-4 text-indigo-500 bg-indigo-100 dark:bg-indigo-900 rounded-full p-2" />
-              <h3 className="font-bold text-lg mb-2 text-gray-800 dark:text-white">Mobile-First Design</h3>
-              <p className="text-gray-500 dark:text-gray-400">Track expenses easily from your phone. UI optimized for fast input anywhere, anytime.</p>
-            </div>
-            <div className="p-6 bg-white dark:bg-gray-900 rounded-2xl shadow-lg flex flex-col items-center text-center animate-scale-in delay-100 transition-all">
-              <DollarSign className="w-12 h-12 mb-4 text-green-600 bg-green-100 dark:bg-green-900 rounded-full p-2" />
-              <h3 className="font-bold text-lg mb-2 text-gray-800 dark:text-white">AI-Powered Suggestions</h3>
-              <p className="text-gray-500 dark:text-gray-400">Let the assistant help you save with personalized finance tips.</p>
-            </div>
-            <div className="p-6 bg-white dark:bg-gray-900 rounded-2xl shadow-lg flex flex-col items-center text-center animate-scale-in delay-200 transition-all">
-              <PieChart className="w-12 h-12 mb-4 text-blue-600 bg-blue-100 dark:bg-blue-900 rounded-full p-2" />
-              <h3 className="font-bold text-lg mb-2 text-gray-800 dark:text-white">Beautiful Visual Reports</h3>
-              <p className="text-gray-500 dark:text-gray-400">Your finances, visualized in engaging and colorful ways on any device.</p>
-            </div>
-          </div>
         </div>
       </section>
 

@@ -1,246 +1,293 @@
 
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { FileText, Upload, CheckCircle, ArrowLeft, Download, FileSpreadsheet, Database } from 'lucide-react';
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { Upload, Download, FileText, AlertCircle, CheckCircle, Home } from 'lucide-react';
+import { toast } from '@/components/ui/sonner';
 
 const ImportFiles = () => {
-  const handleBackToHome = () => {
-    window.location.href = '/';
-  };
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [importResult, setImportResult] = useState<{ success: boolean; count: number; errors: string[] } | null>(null);
 
   const supportedFormats = [
-    { name: "CSV", icon: FileSpreadsheet, description: "Comma-separated values from any bank or app", color: "bg-green-500" },
-    { name: "Excel", icon: FileSpreadsheet, description: "Microsoft Excel files (.xlsx, .xls)", color: "bg-blue-500" },
-    { name: "OFX", icon: Database, description: "Open Financial Exchange format", color: "bg-purple-500" },
-    { name: "QIF", icon: FileText, description: "Quicken Interchange Format", color: "bg-orange-500" },
-    { name: "MT940", icon: Database, description: "SWIFT MT940 bank statements", color: "bg-red-500" },
-    { name: "CAMT", icon: Database, description: "ISO 20022 CAMT format", color: "bg-indigo-500" },
-    { name: "BAI", icon: FileText, description: "Bank Administration Institute format", color: "bg-yellow-500" },
-    { name: "JSON", icon: FileText, description: "JavaScript Object Notation exports", color: "bg-gray-500" }
+    { name: 'CSV', description: 'Comma-separated values', icon: '📊' },
+    { name: 'Excel', description: 'Microsoft Excel files (.xlsx, .xls)', icon: '📈' },
+    { name: 'QIF', description: 'Quicken Interchange Format', icon: '💾' },
+    { name: 'OFX', description: 'Open Financial Exchange', icon: '🏦' },
+    { name: 'PDF', description: 'Bank statements (text-based)', icon: '📄' },
+    { name: 'TSV', description: 'Tab-separated values', icon: '📋' },
+    { name: 'JSON', description: 'JavaScript Object Notation', icon: '🔧' },
+    { name: 'XML', description: 'Extensible Markup Language', icon: '📝' }
   ];
 
-  const importSteps = [
-    {
-      title: "Choose Your File",
-      description: "Select the file from your computer or drag and drop",
-      icon: Upload,
-      color: "from-blue-400 to-blue-600"
-    },
-    {
-      title: "Map Columns",
-      description: "Match your file columns to FinnTra categories",
-      icon: FileText,
-      color: "from-green-400 to-green-600"
-    },
-    {
-      title: "Review & Import",
-      description: "Preview your data and confirm the import",
-      icon: CheckCircle,
-      color: "from-purple-400 to-purple-600"
+  const downloadCSVTemplate = () => {
+    const csvContent = `Date,Description,Amount,Category,Type,Account
+2024-01-15,Grocery Store,-85.43,Food,Expense,Checking
+2024-01-15,Salary Deposit,3500.00,Income,Income,Checking
+2024-01-14,Electric Bill,-120.00,Utilities,Expense,Checking
+2024-01-14,Coffee Shop,-12.50,Food,Expense,Credit Card
+2024-01-13,Gas Station,-45.00,Transportation,Expense,Credit Card`;
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'finntra-import-template.csv');
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success('CSV template downloaded successfully!');
+  };
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      setImportResult(null);
     }
-  ];
+  };
+
+  const processImportFile = async () => {
+    if (!selectedFile) return;
+
+    setIsProcessing(true);
+    setImportResult(null);
+
+    try {
+      // Simulate file processing
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      // Mock processing result
+      const mockResult = {
+        success: true,
+        count: Math.floor(Math.random() * 50) + 10,
+        errors: []
+      };
+
+      // Save to localStorage
+      const existingTransactions = JSON.parse(localStorage.getItem('transactions') || '[]');
+      const newTransactions = Array.from({ length: mockResult.count }, (_, i) => ({
+        id: Date.now() + i,
+        description: `Imported Transaction ${i + 1}`,
+        amount: (Math.random() - 0.5) * 1000,
+        category: ['Food', 'Transportation', 'Utilities', 'Entertainment'][Math.floor(Math.random() * 4)],
+        date: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+      }));
+
+      localStorage.setItem('transactions', JSON.stringify([...newTransactions, ...existingTransactions]));
+      setImportResult(mockResult);
+      toast.success(`Successfully imported ${mockResult.count} transactions!`);
+    } catch (error) {
+      setImportResult({
+        success: false,
+        count: 0,
+        errors: ['Failed to process file. Please check the format and try again.']
+      });
+      toast.error('Import failed. Please try again.');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-white dark:from-gray-950 dark:via-gray-900 dark:to-slate-950">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-blue-100 to-white dark:from-gray-950 dark:via-gray-900 dark:to-slate-950">
       {/* Header */}
       <header className="bg-white shadow-sm border-b dark:bg-gray-900 dark:border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-          <Button variant="ghost" onClick={handleBackToHome} className="flex items-center space-x-2 hover:scale-105 transition-transform duration-200">
-            <ArrowLeft className="h-5 w-5" />
-            <span>Back to Home</span>
-          </Button>
-          <div className="flex items-center space-x-2">
-            <ThemeToggle />
-            <Button variant="outline" onClick={() => window.location.href = '/login'}>
-              Sign In
+          <div className="flex items-center space-x-3">
+            <img src="/lovable-uploads/62637124-2993-4040-a176-d1e9ed77f87d.png" alt="FinnTra Logo" className="h-10 w-10" />
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Import Files</h1>
+          </div>
+          <div className="flex items-center space-x-4">
+            <Button variant="outline" onClick={() => window.location.href = '/'}>
+              <Home className="h-4 w-4 mr-2" />
+              Home
             </Button>
+            <ThemeToggle />
           </div>
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="py-20 text-center">
-        <div className="max-w-4xl mx-auto px-4">
-          <div className="mb-8">
-            <div className="bg-gradient-to-r from-green-400 to-blue-500 p-4 rounded-full w-fit mx-auto mb-6">
-              <Upload className="h-12 w-12 text-white" />
-            </div>
-            <h1 className="text-5xl font-bold text-gray-900 dark:text-white mb-4">
-              Import from File
-            </h1>
-            <p className="text-xl text-gray-600 dark:text-gray-300 mb-8">
-              Bring your existing financial data into FinnTra with support for 8 popular file formats
-            </p>
-          </div>
-          
-          {/* File Upload Demo */}
-          <div className="mb-12">
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-8 max-w-2xl mx-auto">
-              <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-12 text-center hover:border-blue-400 transition-colors">
-                <Upload className="h-16 w-16 mx-auto text-gray-400 mb-4" />
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Drop your file here</h3>
-                <p className="text-gray-500 dark:text-gray-400 mb-4">or click to browse</p>
-                <Button className="bg-gradient-to-r from-green-500 to-blue-500 hover:scale-105 transition-transform duration-200">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+            Import Your Financial Data
+          </h2>
+          <p className="text-xl text-gray-600 dark:text-gray-400">
+            Upload files from your bank or financial software
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-8">
+          {/* Upload Section */}
+          <Card className="shadow-lg">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Upload className="h-5 w-5" />
+                Upload File
+              </CardTitle>
+              <CardDescription>
+                Select a file to import your transaction data
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div>
+                <Label htmlFor="file-upload" className="text-sm font-medium">
                   Choose File
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Supported Formats */}
-      <section className="py-16 bg-white dark:bg-gray-900">
-        <div className="max-w-7xl mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-12">
-            8 Supported File Formats
-          </h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {supportedFormats.map((format, index) => (
-              <Card key={index} className="text-center hover:scale-105 transition-transform duration-200">
-                <CardHeader>
-                  <div className={`${format.color} p-3 rounded-lg w-fit mx-auto`}>
-                    <format.icon className="h-8 w-8 text-white" />
+                </Label>
+                <Input
+                  id="file-upload"
+                  type="file"
+                  accept=".csv,.xlsx,.xls,.qif,.ofx,.pdf,.tsv,.json,.xml"
+                  onChange={handleFileSelect}
+                  className="mt-1"
+                />
+                {selectedFile && (
+                  <div className="mt-2 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <FileText className="h-4 w-4 text-blue-600" />
+                      <span className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                        {selectedFile.name}
+                      </span>
+                      <Badge variant="secondary">
+                        {(selectedFile.size / 1024).toFixed(1)} KB
+                      </Badge>
+                    </div>
                   </div>
-                  <CardTitle className="text-lg">{format.name}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription className="text-sm">{format.description}</CardDescription>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
+                )}
+              </div>
 
-      {/* How It Works */}
-      <section className="py-16 bg-gradient-to-r from-green-50 to-blue-100 dark:from-gray-800 dark:to-gray-900">
-        <div className="max-w-6xl mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-12">
-            How File Import Works
-          </h2>
-          <div className="grid md:grid-cols-3 gap-8">
-            {importSteps.map((step, index) => (
-              <div key={index} className="text-center">
-                <div className={`bg-gradient-to-r ${step.color} p-6 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6`}>
-                  <step.icon className="h-10 w-10 text-white" />
-                </div>
-                <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">{step.title}</h3>
-                <p className="text-gray-600 dark:text-gray-300">{step.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+              <Button
+                onClick={processImportFile}
+                disabled={!selectedFile || isProcessing}
+                className="w-full"
+                size="lg"
+              >
+                {isProcessing ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <Upload className="h-4 w-4 mr-2" />
+                    Import File
+                  </>
+                )}
+              </Button>
 
-      {/* File Mapping Example */}
-      <section className="py-16 bg-white dark:bg-gray-900">
-        <div className="max-w-6xl mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-12">
-            Smart Column Mapping
-          </h2>
-          <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-8 max-w-4xl mx-auto">
-            <div className="grid md:grid-cols-2 gap-8">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Your File Columns</h3>
-                <div className="space-y-2">
-                  {["Date", "Description", "Amount", "Balance", "Reference"].map((col, index) => (
-                    <div key={index} className="bg-white dark:bg-gray-700 p-3 rounded border text-gray-900 dark:text-white">
-                      {col}
-                    </div>
-                  ))}
+              {importResult && (
+                <div className={`p-4 rounded-lg ${
+                  importResult.success 
+                    ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800'
+                    : 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800'
+                }`}>
+                  <div className="flex items-center gap-2">
+                    {importResult.success ? (
+                      <CheckCircle className="h-5 w-5 text-green-600" />
+                    ) : (
+                      <AlertCircle className="h-5 w-5 text-red-600" />
+                    )}
+                    <h4 className={`font-medium ${
+                      importResult.success ? 'text-green-900 dark:text-green-100' : 'text-red-900 dark:text-red-100'
+                    }`}>
+                      {importResult.success ? 'Import Successful!' : 'Import Failed'}
+                    </h4>
+                  </div>
+                  {importResult.success ? (
+                    <p className="text-sm text-green-700 dark:text-green-200 mt-1">
+                      Successfully imported {importResult.count} transactions.
+                    </p>
+                  ) : (
+                    <ul className="text-sm text-red-700 dark:text-red-200 mt-1">
+                      {importResult.errors.map((error, index) => (
+                        <li key={index}>• {error}</li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Template Section */}
+          <Card className="shadow-lg">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Download className="h-5 w-5" />
+                Download Template
+              </CardTitle>
+              <CardDescription>
+                Get a sample CSV file with the correct format
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <h4 className="font-medium text-gray-900 dark:text-white mb-2">Required Columns:</h4>
+                <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                  <li>• Date (YYYY-MM-DD format)</li>
+                  <li>• Description</li>
+                  <li>• Amount (negative for expenses)</li>
+                  <li>• Category</li>
+                  <li>• Type (Income/Expense)</li>
+                  <li>• Account (optional)</li>
+                </ul>
               </div>
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">FinnTra Categories</h3>
-                <div className="space-y-2">
-                  {["Transaction Date", "Merchant/Description", "Amount", "Account Balance", "Transaction ID"].map((cat, index) => (
-                    <div key={index} className="bg-blue-50 dark:bg-blue-900 p-3 rounded border border-blue-200 dark:border-blue-700 text-blue-900 dark:text-blue-100">
-                      {cat}
-                    </div>
-                  ))}
+
+              <Button
+                onClick={downloadCSVTemplate}
+                variant="outline"
+                className="w-full"
+                size="lg"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Download CSV Template
+              </Button>
+
+              <div className="text-center">
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Need help? Check our{' '}
+                  <a href="#" className="text-blue-600 hover:underline">
+                    import guide
+                  </a>
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Supported Formats */}
+        <Card className="mt-8 shadow-lg">
+          <CardHeader>
+            <CardTitle>Supported File Formats</CardTitle>
+            <CardDescription>
+              FinnTra supports 8 different file formats for easy importing
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {supportedFormats.map((format, index) => (
+                <div
+                  key={index}
+                  className="flex flex-col items-center p-4 bg-gray-50 dark:bg-gray-800 rounded-lg hover:scale-105 transition-transform"
+                >
+                  <span className="text-2xl mb-2">{format.icon}</span>
+                  <h4 className="font-medium text-gray-900 dark:text-white">{format.name}</h4>
+                  <p className="text-xs text-gray-600 dark:text-gray-400 text-center mt-1">
+                    {format.description}
+                  </p>
                 </div>
-              </div>
+              ))}
             </div>
-            <div className="text-center mt-6">
-              <Badge variant="secondary" className="text-green-600 bg-green-100 dark:bg-green-900 dark:text-green-300">
-                <CheckCircle className="h-4 w-4 mr-1" />
-                Auto-mapped successfully
-              </Badge>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Popular Sources */}
-      <section className="py-16 bg-gradient-to-r from-gray-50 to-blue-50 dark:from-gray-800 dark:to-gray-900">
-        <div className="max-w-4xl mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">
-            Import from Popular Sources
-          </h2>
-          <div className="grid md:grid-cols-2 gap-8 mb-8">
-            <Card className="hover:scale-105 transition-transform duration-200">
-              <CardHeader>
-                <FileSpreadsheet className="h-12 w-12 mx-auto text-green-600 mb-4" />
-                <CardTitle>Bank Statements</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription className="text-left">
-                  Import statements from:
-                  <ul className="list-disc list-inside mt-2 space-y-1">
-                    <li>Online banking downloads</li>
-                    <li>Monthly PDF statements</li>
-                    <li>Credit card statements</li>
-                    <li>Investment account exports</li>
-                  </ul>
-                </CardDescription>
-              </CardContent>
-            </Card>
-            
-            <Card className="hover:scale-105 transition-transform duration-200">
-              <CardHeader>
-                <Database className="h-12 w-12 mx-auto text-blue-600 mb-4" />
-                <CardTitle>Other Apps</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription className="text-left">
-                  Migrate data from:
-                  <ul className="list-disc list-inside mt-2 space-y-1">
-                    <li>Mint exports</li>
-                    <li>YNAB backups</li>
-                    <li>Quicken files</li>
-                    <li>Personal spreadsheets</li>
-                  </ul>
-                </CardDescription>
-              </CardContent>
-            </Card>
-          </div>
-          
-          <div className="bg-blue-50 dark:bg-blue-900 rounded-lg p-6 mb-8">
-            <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-100 mb-2">Need Help?</h3>
-            <p className="text-blue-700 dark:text-blue-300 mb-4">
-              Can't find your format? We also accept custom CSV files and can help you map any data structure.
-            </p>
-            <Button variant="outline" className="border-blue-300 text-blue-600 hover:bg-blue-100 hover:scale-105 transition-transform duration-200">
-              <Download className="h-4 w-4 mr-2" />
-              Download CSV Template
-            </Button>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-16 bg-gradient-to-r from-green-600 to-blue-600 text-white text-center">
-        <div className="max-w-4xl mx-auto px-4">
-          <h2 className="text-3xl font-bold mb-6">Ready to Import Your Data?</h2>
-          <p className="text-xl mb-8 text-green-100">Bring years of financial history into FinnTra in minutes</p>
-          <Button size="lg" className="bg-white text-green-600 hover:bg-gray-100 hover:scale-105 transition-transform duration-200">
-            Start Importing
-          </Button>
-        </div>
-      </section>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };
