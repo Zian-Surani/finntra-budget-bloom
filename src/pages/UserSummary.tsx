@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,6 +6,7 @@ import { User, Home, TrendingUp, TrendingDown, DollarSign, PieChart, Calendar } 
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { PieChart as RechartsPie, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import { useCurrencyConverter } from "@/hooks/useCurrencyConverter";
+import { RealTimeFinancialCharts } from '@/components/RealTimeFinancialCharts';
 
 const UserSummary = () => {
   const { formatCurrency } = useCurrencyConverter();
@@ -75,6 +75,12 @@ const UserSummary = () => {
               </CardContent>
             </Card>
           ))}
+        </div>
+
+        {/* Real-Time Charts Section */}
+        <div className="mb-8">
+          <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Real-Time Financial Analytics</h3>
+          <RealTimeFinancialCharts />
         </div>
 
         {/* Charts Section */}

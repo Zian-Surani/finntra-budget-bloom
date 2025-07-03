@@ -29,11 +29,16 @@ import { RealtimeUpdates } from "@/components/RealtimeUpdates";
 import { ReportGenerator } from "@/components/ReportGenerator";
 import { useCurrencyConverter } from "@/hooks/useCurrencyConverter";
 import { useAppContext } from "@/contexts/AppContext";
+import { useFirstTimeLogin } from "@/hooks/useFirstTimeLogin";
+import { RealTimeFinancialCharts } from "@/components/RealTimeFinancialCharts";
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const { state } = useAppContext();
   const { formatCurrency, selectedCurrency, convertAmount } = useCurrencyConverter();
+  
+  // Add first-time login detection
+  const { hasCheckedFirstLogin } = useFirstTimeLogin();
 
   // Calculate real stats from user data
   const totalBalance = state.banks.reduce((sum, bank) => sum + bank.balance, 0);
@@ -175,6 +180,10 @@ const Dashboard = () => {
               <BarChart3 className="h-4 w-4" />
               Overview
             </TabsTrigger>
+            <TabsTrigger value="analytics" className="flex items-center gap-2">
+              <PieChart className="h-4 w-4" />
+              Analytics
+            </TabsTrigger>
             <TabsTrigger value="quick-add" className="flex items-center gap-2">
               <Plus className="h-4 w-4" />
               Quick Add
@@ -190,10 +199,6 @@ const Dashboard = () => {
             <TabsTrigger value="mobile" className="flex items-center gap-2">
               <Smartphone className="h-4 w-4" />
               Mobile
-            </TabsTrigger>
-            <TabsTrigger value="analytics" className="flex items-center gap-2">
-              <PieChart className="h-4 w-4" />
-              Analytics
             </TabsTrigger>
           </TabsList>
 
@@ -300,6 +305,14 @@ const Dashboard = () => {
             </Card>
           </TabsContent>
 
+          <TabsContent value="analytics" className="space-y-6">
+            <div className="text-center mb-6">
+              <h2 className="text-2xl font-bold mb-2">Real-Time Financial Analytics</h2>
+              <p className="text-gray-600 dark:text-gray-400">Live insights into your financial health</p>
+            </div>
+            <RealTimeFinancialCharts />
+          </TabsContent>
+
           <TabsContent value="quick-add" className="space-y-6">
             <div className="text-center mb-6">
               <h2 className="text-2xl font-bold mb-2">Quick Add Transaction</h2>
@@ -385,21 +398,6 @@ const Dashboard = () => {
                   </Button>
                 </CardContent>
               </Card>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="analytics" className="space-y-6">
-            <div className="text-center mb-6">
-              <h2 className="text-2xl font-bold mb-2">Financial Analytics</h2>
-              <p className="text-gray-600 dark:text-gray-400">Detailed insights and reports</p>
-            </div>
-            <div className="grid md:grid-cols-2 gap-6">
-              <FinancialAnalytics />
-              <ReportGenerator 
-                transactions={state.transactions} 
-                currency={selectedCurrency} 
-                formatCurrency={formatCurrencyForReport} 
-              />
             </div>
           </TabsContent>
         </Tabs>

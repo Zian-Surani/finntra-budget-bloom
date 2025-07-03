@@ -1,4 +1,3 @@
-
 interface EmailNotification {
   to: string;
   subject: string;
@@ -102,6 +101,50 @@ class EmailNotificationService {
       subject: '🔑 Password Reset Code - FinnTra',
       message: `Your password reset code is: ${code}. This code will expire in 15 minutes.`,
       type: 'security'
+    });
+  }
+
+  async sendWelcomeEmail(email: string, name: string): Promise<boolean> {
+    return this.sendNotification({
+      to: email,
+      subject: '🎉 Welcome to FinnTra - Your Financial Journey Begins!',
+      message: `Welcome to FinnTra, ${name}!
+
+We're excited to help you take control of your finances. Here's what you can do:
+
+✅ Track your expenses and income
+✅ Set up budgets and savings goals  
+✅ Connect your bank accounts
+✅ Generate detailed financial reports
+✅ Get AI-powered financial insights
+
+Your account is now active and ready to use!
+
+Best regards,
+The FinnTra Team`,
+      type: 'general'
+    });
+  }
+
+  async sendTransactionSummary(email: string, totalIncome: number, totalExpenses: number, period: string): Promise<boolean> {
+    const netChange = totalIncome - totalExpenses;
+    const status = netChange >= 0 ? 'positive' : 'negative';
+    
+    return this.sendNotification({
+      to: email,
+      subject: `📊 Your ${period} Financial Summary - FinnTra`,
+      message: `Your ${period} Financial Summary:
+
+💰 Total Income: $${totalIncome.toFixed(2)}
+💸 Total Expenses: $${totalExpenses.toFixed(2)}
+📈 Net Change: ${netChange >= 0 ? '+' : ''}$${netChange.toFixed(2)}
+
+${status === 'positive' ? 
+  'Great job! You\'re on track with your financial goals.' : 
+  'Consider reviewing your expenses to improve your financial health.'}
+
+Check your dashboard for detailed insights.`,
+      type: 'general'
     });
   }
 }
