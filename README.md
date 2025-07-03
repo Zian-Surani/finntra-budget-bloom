@@ -1,24 +1,41 @@
-# Welcome to your Lovable project
+# 💸 Finntra: Budget Bloom
 
-## Project info
+A smart and simple personal finance tracker built to help users manage their expenses, visualize budgets, and achieve financial clarity.
 
-**URL**: https://lovable.dev/projects/b9033237-26fc-43ae-9e25-d38cc8741f55
+## 🚀 Overview
 
-## How can I edit this code?
+**Finntra: Budget Bloom** is a web-based budget tracker designed to give users full control over their financial planning. With intuitive UI and data-driven insights, the application provides a seamless way to log expenses, categorize spending, and set budgeting goals.
 
-There are several ways of editing your application.
+## 🎯 Key Features
 
-**Use Lovable**
+- 📊 **Expense Tracking** – Log daily expenses with categories and descriptions.
+- 🎯 **Budget Planning** – Set monthly budgets and track spending progress.
+- 📈 **Insightful Dashboards** – Visualize spending patterns via dynamic graphs.
+- 🔒 **User Authentication** – Secure login system to protect financial data.
+- 💡 **Smart Tips** – AI-generated budget tips based on user habits *(optional future enhancement)*
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/b9033237-26fc-43ae-9e25-d38cc8741f55) and start prompting.
+## 🛠 Tech Stack
 
-Changes made via Lovable will be committed automatically to this repo.
+- **Frontend:** React.js, Tailwind CSS  
+- **Backend:** Node.js, Express.js  
+- **Database:** MongoDB  
+- **Authentication:** JWT-based auth  
+- **Charts & Visuals:** Chart.js / Recharts
+
+## 📦 Installation
+
+```bash
+git clone https://github.com/Zian-Surani/finntra-budget-bloom.git
+cd finntra-budget-bloom
+npm install
+npm start
+
 
 **Use your preferred IDE**
 
 If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating
 
 Follow these steps:
 
@@ -60,14 +77,4 @@ This project is built with:
 - shadcn-ui
 - Tailwind CSS
 
-## How can I deploy this project?
 
-Simply open [Lovable](https://lovable.dev/projects/b9033237-26fc-43ae-9e25-d38cc8741f55) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
