@@ -53,6 +53,84 @@ export type Database = {
           },
         ]
       }
+      game_sessions: {
+        Row: {
+          created_at: string
+          difficulty: string
+          end_time: string | null
+          id: string
+          is_completed: boolean
+          moves_count: number
+          recording_url: string | null
+          score: number
+          solve_time: number | null
+          start_time: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          difficulty?: string
+          end_time?: string | null
+          id?: string
+          is_completed?: boolean
+          moves_count?: number
+          recording_url?: string | null
+          score?: number
+          solve_time?: number | null
+          start_time?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          difficulty?: string
+          end_time?: string | null
+          id?: string
+          is_completed?: boolean
+          moves_count?: number
+          recording_url?: string | null
+          score?: number
+          solve_time?: number | null
+          start_time?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      leaderboard: {
+        Row: {
+          average_time: number | null
+          best_time: number
+          created_at: string
+          id: string
+          total_completed: number
+          total_games: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          average_time?: number | null
+          best_time: number
+          created_at?: string
+          id?: string
+          total_completed?: number
+          total_games?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          average_time?: number | null
+          best_time?: number
+          created_at?: string
+          id?: string
+          total_completed?: number
+          total_games?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           address: string | null

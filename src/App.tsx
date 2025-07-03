@@ -8,6 +8,7 @@ import { Suspense, lazy } from "react";
 import { MessageLoading } from "@/components/ui/message-loading";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { AppProvider } from "@/contexts/AppContext";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 // Lazy load components
 const Landing = lazy(() => import("./pages/Landing"));
@@ -35,49 +36,72 @@ const PasswordSettings = lazy(() => import("./pages/PasswordSettings"));
 const Cards = lazy(() => import("./pages/Cards"));
 const Accounts = lazy(() => import("./pages/Accounts"));
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: (failureCount, error) => {
+        // Don't retry auth errors or network errors in production
+        if (error && typeof error === 'object' && 'message' in error) {
+          if (error.message.includes('auth') || error.message.includes('network')) {
+            return false;
+          }
+        }
+        return failureCount < 2;
+      },
+      staleTime: 5 * 60 * 1000, // 5 minutes
+    },
+  },
+});
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <AppProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Suspense fallback={<MessageLoading />}>
-              <Routes>
-                <Route path="/" element={<Suspense fallback={<MessageLoading />}><Landing /></Suspense>} />
-                <Route path="/login" element={<Suspense fallback={<MessageLoading />}><Login /></Suspense>} />
-                <Route path="/onboarding" element={<Suspense fallback={<MessageLoading />}><Onboarding /></Suspense>} />
-                <Route path="/dashboard" element={<Suspense fallback={<MessageLoading />}><Dashboard /></Suspense>} />
-                <Route path="/savings" element={<Suspense fallback={<MessageLoading />}><Savings /></Suspense>} />
-                <Route path="/dashboard/user" element={<Suspense fallback={<MessageLoading />}><DashboardUser /></Suspense>} />
-                <Route path="/dashboard/admin" element={<Suspense fallback={<MessageLoading />}><DashboardAdmin /></Suspense>} />
-                <Route path="/dashboard/developer" element={<Suspense fallback={<MessageLoading />}><DashboardDeveloper /></Suspense>} />
-                <Route path="/ai-chat" element={<Suspense fallback={<MessageLoading />}><AiChat /></Suspense>} />
-                <Route path="/bank-connections" element={<Suspense fallback={<MessageLoading />}><BankConnections /></Suspense>} />
-                <Route path="/add-entries" element={<Suspense fallback={<MessageLoading />}><AddEntries /></Suspense>} />
-                <Route path="/import-files" element={<Suspense fallback={<MessageLoading />}><ImportFiles /></Suspense>} />
-                <Route path="/settings" element={<Suspense fallback={<MessageLoading />}><Settings /></Suspense>} />
-                <Route path="/profile-settings" element={<Suspense fallback={<MessageLoading />}><ProfileSettings /></Suspense>} />
-                <Route path="/privacy-settings" element={<Suspense fallback={<MessageLoading />}><PrivacySettings /></Suspense>} />
-                <Route path="/notification-settings" element={<Suspense fallback={<MessageLoading />}><NotificationSettings /></Suspense>} />
-                <Route path="/password-settings" element={<Suspense fallback={<MessageLoading />}><PasswordSettings /></Suspense>} />
-                <Route path="/cards" element={<Suspense fallback={<MessageLoading />}><Cards /></Suspense>} />
-                <Route path="/accounts" element={<Suspense fallback={<MessageLoading />}><Accounts /></Suspense>} />
-                <Route path="/expense-report" element={<Suspense fallback={<MessageLoading />}><ExpenseReport /></Suspense>} />
-                <Route path="/tax-calculator" element={<Suspense fallback={<MessageLoading />}><TaxCalculator /></Suspense>} />
-                <Route path="/user-summary" element={<Suspense fallback={<MessageLoading />}><UserSummary /></Suspense>} />
-                <Route path="/balance" element={<Suspense fallback={<MessageLoading />}><Balance /></Suspense>} />
-                <Route path="*" element={<Suspense fallback={<MessageLoading />}><NotFound /></Suspense>} />
-              </Routes>
-            </Suspense>
-          </BrowserRouter>
-        </TooltipProvider>
-      </AppProvider>
-    </AuthProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  console.log('App: Initializing application');
+  console.log('App: Environment:', process.env.NODE_ENV);
+  console.log('App: Origin:', window.location.origin);
+
+  return (
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <AppProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <Suspense fallback={<MessageLoading />}>
+                  <Routes>
+                    <Route path="/" element={<Suspense fallback={<MessageLoading />}><Landing /></Suspense>} />
+                    <Route path="/login" element={<Suspense fallback={<MessageLoading />}><Login /></Suspense>} />
+                    <Route path="/onboarding" element={<Suspense fallback={<MessageLoading />}><Onboarding /></Suspense>} />
+                    <Route path="/dashboard" element={<Suspense fallback={<MessageLoading />}><Dashboard /></Suspense>} />
+                    <Route path="/savings" element={<Suspense fallback={<MessageLoading />}><Savings /></Suspense>} />
+                    <Route path="/dashboard/user" element={<Suspense fallback={<MessageLoading />}><DashboardUser /></Suspense>} />
+                    <Route path="/dashboard/admin" element={<Suspense fallback={<MessageLoading />}><DashboardAdmin /></Suspense>} />
+                    <Route path="/dashboard/developer" element={<Suspense fallback={<MessageLoading />}><DashboardDeveloper /></Suspense>} />
+                    <Route path="/ai-chat" element={<Suspense fallback={<MessageLoading />}><AiChat /></Suspense>} />
+                    <Route path="/bank-connections" element={<Suspense fallback={<MessageLoading />}><BankConnections /></Suspense>} />
+                    <Route path="/add-entries" element={<Suspense fallback={<MessageLoading />}><AddEntries /></Suspense>} />
+                    <Route path="/import-files" element={<Suspense fallback={<MessageLoading />}><ImportFiles /></Suspense>} />
+                    <Route path="/settings" element={<Suspense fallback={<MessageLoading />}><Settings /></Suspense>} />
+                    <Route path="/profile-settings" element={<Suspense fallback={<MessageLoading />}><ProfileSettings /></Suspense>} />
+                    <Route path="/privacy-settings" element={<Suspense fallback={<MessageLoading />}><PrivacySettings /></Suspense>} />
+                    <Route path="/notification-settings" element={<Suspense fallback={<MessageLoading />}><NotificationSettings /></Suspense>} />
+                    <Route path="/password-settings" element={<Suspense fallback={<MessageLoading />}><PasswordSettings /></Suspense>} />
+                    <Route path="/cards" element={<Suspense fallback={<MessageLoading />}><Cards /></Suspense>} />
+                    <Route path="/accounts" element={<Suspense fallback={<MessageLoading />}><Accounts /></Suspense>} />
+                    <Route path="/expense-report" element={<Suspense fallback={<MessageLoading />}><ExpenseReport /></Suspense>} />
+                    <Route path="/tax-calculator" element={<Suspense fallback={<MessageLoading />}><TaxCalculator /></Suspense>} />
+                    <Route path="/user-summary" element={<Suspense fallback={<MessageLoading />}><UserSummary /></Suspense>} />
+                    <Route path="/balance" element={<Suspense fallback={<MessageLoading />}><Balance /></Suspense>} />
+                    <Route path="*" element={<Suspense fallback={<MessageLoading />}><NotFound /></Suspense>} />
+                  </Routes>
+                </Suspense>
+              </BrowserRouter>
+            </TooltipProvider>
+          </AppProvider>
+        </AuthProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
+  );
+};
 
 export default App;

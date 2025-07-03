@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './AuthContext';
@@ -49,6 +48,7 @@ interface AppState {
   currency: string;
   loading: boolean;
   isNewUser: boolean;
+  error: string | null;
 }
 
 interface AppContextType {
@@ -66,6 +66,7 @@ interface AppContextType {
   setCurrency: (currency: string) => Promise<void>;
   refreshData: () => Promise<void>;
   uploadProfilePhoto: (file: File) => Promise<string>;
+  clearError: () => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -77,7 +78,8 @@ const initialState: AppState = {
   transactions: [],
   currency: 'USD',
   loading: true,
-  isNewUser: true
+  isNewUser: true,
+  error: null
 };
 
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -87,8 +89,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   // Load data from Supabase when user is authenticated
   useEffect(() => {
     if (user && session) {
+      console.log('AppProvider: Loading data for user:', user.id);
       loadUserData();
     } else {
+      console.log('AppProvider: No user session, resetting to initial state');
       setState(initialState);
     }
   }, [user, session]);
@@ -98,6 +102,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     let subscription: any = null;
 
     if (user && session) {
+      console.log('AppProvider: Setting up realtime subscriptions for user:', user.id);
+      
       // Setup realtime subscriptions with unique channel name
       const channelName = `user-data-changes-${user.id}-${Date.now()}`;
       subscription = supabase
@@ -167,50 +173,80 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
     return () => {
       if (subscription) {
-        console.log('Cleaning up realtime subscription');
+        console.log('AppProvider: Cleaning up realtime subscription');
         supabase.removeChannel(subscription);
       }
     };
   }, [user?.id, session]);
 
   const loadUserData = async () => {
-    if (!user) return;
+    if (!user) {
+      console.log('AppProvider: No user available for data loading');
+      return;
+    }
     
-    setState(prev => ({ ...prev, loading: true }));
+    console.log('AppProvider: Starting data load for user:', user.id);
+    setState(prev => ({ ...prev, loading: true, error: null }));
 
     try {
       // Load profile data
-      const { data: profile } = await supabase
+      console.log('AppProvider: Loading profile data');
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', user.id)
         .single();
 
+      if (profileError) {
+        console.error('Error loading profile:', profileError);
+        throw new Error(`Profile load failed: ${profileError.message}`);
+      }
+
       // Load banks
-      const { data: banks } = await supabase
+      console.log('AppProvider: Loading banks data');
+      const { data: banks, error: banksError } = await supabase
         .from('banks')
         .select('*')
         .eq('user_id', user.id);
 
+      if (banksError) {
+        console.error('Error loading banks:', banksError);
+      }
+
       // Load savings goals
-      const { data: savingsGoals } = await supabase
+      console.log('AppProvider: Loading savings goals data');
+      const { data: savingsGoals, error: savingsError } = await supabase
         .from('savings_goals')
         .select('*')
         .eq('user_id', user.id);
 
+      if (savingsError) {
+        console.error('Error loading savings goals:', savingsError);
+      }
+
       // Load transactions
-      const { data: transactions } = await supabase
+      console.log('AppProvider: Loading transactions data');
+      const { data: transactions, error: transactionsError } = await supabase
         .from('transactions')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
+      if (transactionsError) {
+        console.error('Error loading transactions:', transactionsError);
+      }
+
       // Load user settings
-      const { data: settings } = await supabase
+      console.log('AppProvider: Loading user settings data');
+      const { data: settings, error: settingsError } = await supabase
         .from('user_settings')
         .select('*')
         .eq('user_id', user.id)
         .single();
+
+      if (settingsError) {
+        console.error('Error loading settings:', settingsError);
+      }
 
       // Determine if user is new - check actual data rather than database flags
       const hasRealBanks = banks && banks.length > 0;
@@ -218,6 +254,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       const hasValidProfile = profile?.name && profile.name.trim() !== '' && profile.name !== 'John Doe';
       
       const isNewUser = !hasValidProfile || (!hasRealBanks && !hasRealTransactions);
+
+      console.log('AppProvider: Data load complete', {
+        hasProfile: !!profile,
+        banksCount: banks?.length || 0,
+        transactionsCount: transactions?.length || 0,
+        isNewUser
+      });
 
       setState(prev => ({
         ...prev,
@@ -241,24 +284,45 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         })),
         currency: settings?.currency || 'USD',
         loading: false,
-        isNewUser
+        isNewUser,
+        error: null
       }));
     } catch (error) {
-      console.error('Error loading user data:', error);
-      setState(prev => ({ ...prev, loading: false }));
+      console.error('AppProvider: Error loading user data:', error);
+      setState(prev => ({ 
+        ...prev, 
+        loading: false, 
+        error: error instanceof Error ? error.message : 'Failed to load data'
+      }));
     }
   };
 
+  const clearError = () => {
+    setState(prev => ({ ...prev, error: null }));
+  };
+
   const updateUserData = async (data: Partial<UserData>) => {
-    if (!user) return;
+    if (!user) {
+      console.error('AppProvider: No user available for update');
+      throw new Error('User not authenticated');
+    }
 
-    const { error } = await supabase
-      .from('profiles')
-      .update(data)
-      .eq('id', user.id);
+    console.log('AppProvider: Updating user data:', data);
 
-    if (error) {
-      console.error('Error updating user data:', error);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update(data)
+        .eq('id', user.id);
+
+      if (error) {
+        console.error('Error updating user data:', error);
+        throw error;
+      }
+      
+      console.log('AppProvider: User data updated successfully');
+    } catch (error) {
+      console.error('AppProvider: Failed to update user data:', error);
       throw error;
     }
   };
@@ -266,42 +330,58 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const uploadProfilePhoto = async (file: File): Promise<string> => {
     if (!user) throw new Error('User not authenticated');
 
+    console.log('AppProvider: Uploading profile photo');
+
     const fileExt = file.name.split('.').pop();
     const fileName = `${user.id}/profile.${fileExt}`;
 
-    const { error: uploadError } = await supabase.storage
-      .from('profile-photos')
-      .upload(fileName, file, { upsert: true });
+    try {
+      const { error: uploadError } = await supabase.storage
+        .from('profile-photos')
+        .upload(fileName, file, { upsert: true });
 
-    if (uploadError) {
-      console.error('Error uploading photo:', uploadError);
-      throw uploadError;
+      if (uploadError) {
+        console.error('Error uploading photo:', uploadError);
+        throw uploadError;
+      }
+
+      const { data } = supabase.storage
+        .from('profile-photos')
+        .getPublicUrl(fileName);
+
+      // Update profile with new photo URL
+      await updateUserData({ profile_photo: data.publicUrl });
+
+      console.log('AppProvider: Profile photo uploaded successfully');
+      return data.publicUrl;
+    } catch (error) {
+      console.error('AppProvider: Failed to upload profile photo:', error);
+      throw error;
     }
-
-    const { data } = supabase.storage
-      .from('profile-photos')
-      .getPublicUrl(fileName);
-
-    // Update profile with new photo URL
-    await updateUserData({ profile_photo: data.publicUrl });
-
-    return data.publicUrl;
   };
 
   const addBank = async (data: Omit<BankData, 'id'>) => {
     if (!user) return;
 
-    const { error } = await supabase
-      .from('banks')
-      .insert([{ ...data, user_id: user.id }]);
+    console.log('AppProvider: Adding bank:', data.name);
 
-    if (error) {
-      console.error('Error adding bank:', error);
+    try {
+      const { error } = await supabase
+        .from('banks')
+        .insert([{ ...data, user_id: user.id }]);
+
+      if (error) {
+        console.error('Error adding bank:', error);
+        throw error;
+      }
+
+      // Mark user as having accounts
+      await updateUserData({ has_accounts: true });
+      console.log('AppProvider: Bank added successfully');
+    } catch (error) {
+      console.error('AppProvider: Failed to add bank:', error);
       throw error;
     }
-
-    // Mark user as having accounts
-    await updateUserData({ has_accounts: true });
   };
 
   const updateBank = async (id: string, data: Partial<BankData>) => {
@@ -380,18 +460,27 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const addTransaction = async (transaction: Omit<Transaction, 'id'>) => {
     if (!user) return;
 
-    const { error } = await supabase
-      .from('transactions')
-      .insert([{ ...transaction, user_id: user.id }]);
+    console.log('AppProvider: Adding transaction:', transaction);
 
-    if (error) {
-      console.error('Error adding transaction:', error);
+    try {
+      const { error } = await supabase
+        .from('transactions')
+        .insert([{ ...transaction, user_id: user.id }]);
+
+      if (error) {
+        console.error('Error adding transaction:', error);
+        throw error;
+      }
+
+      // Mark user as onboarded after first transaction
+      if (state.isNewUser) {
+        await updateUserData({ is_onboarded: true });
+      }
+      
+      console.log('AppProvider: Transaction added successfully');
+    } catch (error) {
+      console.error('AppProvider: Failed to add transaction:', error);
       throw error;
-    }
-
-    // Mark user as onboarded after first transaction
-    if (state.isNewUser) {
-      await updateUserData({ is_onboarded: true });
     }
   };
 
@@ -439,6 +528,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   const refreshData = async () => {
+    console.log('AppProvider: Manual data refresh requested');
     await loadUserData();
   };
 
@@ -457,7 +547,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       deleteTransaction,
       setCurrency,
       refreshData,
-      uploadProfilePhoto
+      uploadProfilePhoto,
+      clearError
     }}>
       {children}
     </AppContext.Provider>
